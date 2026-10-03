@@ -86,18 +86,7 @@ export async function listTags() {
 }
 export async function setEntryTags(entryId: string, names: unknown) {
   uuid.parse(entryId); const parsed = z.array(tagName).max(20).parse(names);
-  const { db, user } = await userDb();
-  const { data: entry } = await db.from("entries").select("id").eq("id", entryId).eq("user_id", user.id).is("deleted_at", null).maybeSingle();
-  if (!entry) throw new Error("Entry not found.");
-  const unique = [...new Map(parsed.map(name => [name.toLowerCase(), name])).values()];
-  const ids: string[] = [];
-  for (const name of unique) {
-    const { data, error } = await db.from("tags").upsert({ user_id: user.id, name }, { onConflict: "user_id,normalized_name", ignoreDuplicates: true }).select("id").maybeSingle();
-    if (error) throw error;
-    if (data) ids.push(data.id);
-    else { const { data: existing } = await db.from("tags").select("id").eq("user_id", user.id).eq("normalized_name", name.toLowerCase()).single(); if (existing) ids.push(existing.id); }
-  }
-  const { error: deleteError } = await db.from("entry_tags").delete().eq("entry_id", entryId).eq("user_id", user.id);
-  if (deleteError) throw deleteError;
-  if (ids.length) { const { error } = await db.from("entry_tags").insert(ids.map(tag_id => ({ entry_id: entryId, tag_id, user_id: user.id }))); if (error) throw error; }
+  const { db } = await userDb();
+  const { error } = await db.rpc("replace_entry_tags", { p_entry_id: entryId, p_names: parsed });
+  if (error) throw error;
 }
