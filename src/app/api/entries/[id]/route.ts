@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { saveEntry, setEntryDeleted, setEntryTags } from "@/lib/journal-service";
+import { saveEntry, setEntryDeleted } from "@/lib/journal-service";
 import { privateJson, sameOrigin } from "@/lib/http";
 export const runtime = "nodejs";
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

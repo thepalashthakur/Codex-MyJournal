@@ -1,7 +1,9 @@
 "use client";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function AuthForm() {
+  const router = useRouter();
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -12,7 +14,7 @@ export function AuthForm() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not sign in.");
       if (data.confirmation_required) setMessage("Check your email to confirm your account, then sign in.");
-      else window.location.assign("/today");
+      else router.push("/today");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Please try again."); }
     finally { setBusy(false); }
   }
