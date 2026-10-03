@@ -1,0 +1,10 @@
+"use client";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+type Template = { id: string; name: string; content: Record<string, unknown>; journal_id: string | null };
+export function TemplateManager({ templates }: { templates: Template[] }) { const router = useRouter(); const [name, setName] = useState(""); const [text, setText] = useState(""); const [message, setMessage] = useState("");
+  async function create(event: FormEvent) { event.preventDefault(); const response = await fetch("/api/templates", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, text }) }); if (response.ok) { setName(""); setText(""); router.refresh(); } else setMessage("Could not create template."); }
+  async function remove(id: string) { if (!confirm("Delete this template?")) return; const response = await fetch(`/api/templates/${id}`, { method: "DELETE" }); if (response.ok) router.refresh(); }
+  return <><form onSubmit={create} className="panel stack"><h2>Create a template</h2><label>Name<input value={name} onChange={event => setName(event.target.value)} required maxLength={100} placeholder="Daily reflection" /></label><label>Starting text<textarea rows={5} value={text} onChange={event => setText(event.target.value)} placeholder="What happened today?" /></label>{message && <p role="alert">{message}</p>}<button className="button primary" style={{ justifySelf: "start" }}>Save template</button></form><div className="section-heading"><h2>Your templates</h2><span>{templates.length}</span></div>{templates.length ? <div className="journal-grid">{templates.map(template => <article className="journal-card" key={template.id}><h2>{template.name}</h2><p>Ready whenever you are.</p><div className="between"><Link href={`/entries/new?template=${template.id}`} className="text-button">Use template →</Link><button className="text-button" onClick={() => void remove(template.id)}>Delete</button></div></article>)}</div> : <p className="muted">Save a structure you would like to return to.</p>}</>;
+}

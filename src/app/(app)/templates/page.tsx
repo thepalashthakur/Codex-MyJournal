@@ -1,0 +1,3 @@
+import { userDb } from "@/lib/db";
+import { TemplateManager } from "@/components/template-manager";
+export default async function Templates() { const { db, user } = await userDb(); const { data, error } = await db.from("entry_templates").select("id,name,content,journal_id").eq("user_id", user.id).order("updated_at", { ascending: false }).limit(100); if (error) throw error; return <main className="page"><header className="page-header"><div><p className="eyebrow">A GENTLE START</p><h1>Templates</h1><p>Reusable pages for the reflections you revisit.</p></div></header><TemplateManager templates={data || []} /></main>; }
