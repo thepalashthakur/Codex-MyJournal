@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
           for (const table of tables) {
             write(`,"${table}":[`); let first = true;
             for (let start = 0; ; start += 500) {
-              const { data, error } = await db.from(table).select("*").eq("user_id", user.id).order(table === "entry_tags" ? "entry_id" : "id").range(start, start + 499);
+              let query = db.from(table).select("*").eq("user_id", user.id).order(table === "entry_tags" ? "entry_id" : "id");
+              if (table === "entry_tags") query = query.order("tag_id");
+              const { data, error } = await query.range(start, start + 499);
               if (error) throw error;
               for (const row of data || []) { write((first ? "" : ",") + JSON.stringify(row)); first = false; }
               if (!data || data.length < 500) break;
