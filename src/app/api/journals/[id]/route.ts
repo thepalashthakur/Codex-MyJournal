@@ -10,5 +10,5 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!sameOrigin(request)) return privateJson({ error: "Invalid origin." }, 403);
   try { await deleteJournal((await params).id); return privateJson({ ok: true }); }
-  catch (error) { return privateJson({ error: error instanceof Error && error.message.startsWith("Move or delete") ? error.message : "Could not delete journal." }, 400); }
+  catch (error) { return privateJson({ error: error instanceof Error && (error.message.startsWith("Move or delete") || error.message.startsWith("The default journal")) ? error.message : "Could not delete journal." }, 400); }
 }
