@@ -65,7 +65,8 @@ export async function setEntryDeleted(id: string, deleted: boolean) {
 }
 export async function listEntries(options: { journalId?: string; tagId?: string; favorites?: boolean; before?: string; search?: string; limit?: number; deleted?: boolean } = {}) {
   const { db, user } = await userDb(); const limit = Math.min(Math.max(options.limit || 20, 1), 50);
-  let query = db.from("entries").select("id,title,content_text,local_date,entry_date,is_favorite,journal_id,journals(name,color),entry_tags(tags(id,name)),attachments(id,type,file_name)").eq("user_id", user.id).order("entry_date", { ascending: false }).order("id", { ascending: false }).limit(limit);
+  const selection = options.tagId ? "id,title,content_text,local_date,entry_date,is_favorite,journal_id,journals(name,color),entry_tags!inner(tag_id,tags(id,name)),attachments(id,type,file_name)" : "id,title,content_text,local_date,entry_date,is_favorite,journal_id,journals(name,color),entry_tags(tags(id,name)),attachments(id,type,file_name)";
+  let query = db.from("entries").select(selection).eq("user_id", user.id).order("entry_date", { ascending: false }).order("id", { ascending: false }).limit(limit);
   query = options.deleted ? query.not("deleted_at", "is", null) : query.is("deleted_at", null);
   if (options.journalId) query = query.eq("journal_id", uuid.parse(options.journalId));
   if (options.favorites) query = query.eq("is_favorite", true);
