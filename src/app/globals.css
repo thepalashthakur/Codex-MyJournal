@@ -70,3 +70,9 @@ h2{font-size:1.18rem;font-weight:650;letter-spacing:-.025em}
 .entry-card{border:0;border-bottom:1px solid var(--line);border-radius:0;padding:18px 4px}
 .entry-card:first-child{border-top:1px solid var(--line)}
 .entry-card:hover{border-color:var(--line)}
+:root{--app-bg:var(--bg);--ink-hover:#3a3834;--sidebar-hover:#f0ede5}
+html[data-theme=dark]{--ink-hover:#e5e1d6;--sidebar-hover:#393630}
+@media(prefers-color-scheme:dark){html[data-theme=system],html:not([data-theme]){--ink-hover:#e5e1d6;--sidebar-hover:#393630}}
+
+:root{--app-bg:var(--bg);--surface:#fffcf2;--panel:#fffcf2;--paper:#fffcf2;--sidebar:#f5f2e9;--ink:#252422;--accent:#eb5e28}
+html[data-theme=light]{--bg:#fffcf2;--surface:#fffcf2;--app-bg:#fffcf2}html:not([data-theme]) .auth-page{background:#fffcf2}

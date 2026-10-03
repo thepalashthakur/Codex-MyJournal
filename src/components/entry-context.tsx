@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import TextField from "@mui/material/TextField";
 
 type Context = {
   locations?: { place_name: string | null; latitude: number | null; longitude: number | null; source: string } | null;
@@ -85,17 +88,17 @@ export function EntryContext({ entryId, context }: { entryId: string; context: C
     }
   }
 
-  return <section className="panel stack" style={{ marginTop: 24 }}>
+  return <Paper component="section" elevation={0} className="panel stack" style={{ marginTop: 24 }}>
     <h2 style={{ margin: 0 }}>Place & weather</h2>
     <p className="muted">Use your current coordinates or enter a place manually. Location is saved only when you choose Save context.</p>
-    <div><button type="button" className="button" disabled={locating} onClick={() => fetchCurrentLocation()}>{locating ? "Finding location…" : "Use current location"}</button></div>
+    <div><Button type="button" variant="outlined" disabled={locating} onClick={() => fetchCurrentLocation()}>{locating ? "Finding location…" : "Use current location"}</Button></div>
     <div className="search-filters">
-      <label>Place<input value={placeName} onChange={event => setPlaceName(event.target.value)} placeholder="A place to remember" /></label>
-      <label>Latitude<input type="number" min={-90} max={90} step="any" value={latitude} onChange={event => { setLatitude(event.target.value); setLocationSource("manual"); }} /></label>
-      <label>Longitude<input type="number" min={-180} max={180} step="any" value={longitude} onChange={event => { setLongitude(event.target.value); setLocationSource("manual"); }} /></label>
-      <label>Temperature °C<input type="number" step="any" value={temperature} onChange={event => setTemperature(event.target.value)} /></label>
-      <label>Condition<input value={condition} onChange={event => setCondition(event.target.value)} placeholder="Sunny" /></label>
+      <TextField label="Place" value={placeName} onChange={event => setPlaceName(event.target.value)} placeholder="A place to remember" />
+      <TextField label="Latitude" type="number" slotProps={{ htmlInput: { min: -90, max: 90, step: "any" } }} value={latitude} onChange={event => { setLatitude(event.target.value); setLocationSource("manual"); }} />
+      <TextField label="Longitude" type="number" slotProps={{ htmlInput: { min: -180, max: 180, step: "any" } }} value={longitude} onChange={event => { setLongitude(event.target.value); setLocationSource("manual"); }} />
+      <TextField label="Temperature °C" type="number" slotProps={{ htmlInput: { step: "any" } }} value={temperature} onChange={event => setTemperature(event.target.value)} />
+      <TextField label="Condition" value={condition} onChange={event => setCondition(event.target.value)} placeholder="Sunny" />
     </div>
-    <div className="row"><button type="button" className="button" disabled={saving || locating} onClick={() => void save()}>{saving ? "Saving…" : "Save context"}</button><span role="status" className="muted">{status}</span></div>
-  </section>;
+    <div className="row"><Button type="button" variant="contained" disabled={saving || locating} onClick={() => void save()}>{saving ? "Saving…" : "Save context"}</Button><span role="status" className="muted">{status}</span></div>
+  </Paper>;
 }
