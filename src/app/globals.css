@@ -150,3 +150,10 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
   .editor-bottom button { margin-top: 10px; }
   .between { align-items: flex-start; flex-wrap: wrap; }
 }
+.entry-sections { margin-top: 32px; }
+.entry-sections .MuiButton-root, .context-manager .MuiButton-root, .context-picker .MuiButton-root { min-height: 44px; }
+.entry-sections .section-actions .MuiButton-root { min-width: 44px; }
+.context-picker .MuiChip-clickable { min-height: 44px; }
+.section-prose { min-height: 90px; padding: 8px 0; }
+.reader-section { margin: 28px 0; padding-top: 24px; border-top: 1px solid var(--line); }
+.reader-section h2 { margin-bottom: 16px; }
