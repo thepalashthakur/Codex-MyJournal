@@ -11,6 +11,7 @@ A private, writing-first journal built with Next.js App Router, TypeScript, Supa
 - Photos, video, audio, PDFs, and safe text documents uploaded through S3Sync. Files remain private and are checked against entry ownership before display.
 - Manual place and weather context. Precise location is never collected automatically.
 - JSON and Markdown exports.
+- Optional ordered entry sections, each with its own rich text, one optional emotion and intensity, and multiple impact areas and entities. Emotion and impact libraries can be customized under Settings.
 
 ## Architecture
 
@@ -18,13 +19,25 @@ The browser calls same-origin Next.js route handlers. These resolve the user thr
 
 Entry content is versioned TipTap JSON (`content_format = tiptap-json`, `content_version = 1`). `content_text` is a derived plain-text copy for search, previews, and Markdown export. `entry_date` is the UTC instant; `local_date` and `timezone` preserve the intended calendar day. `created_at` is never changed by backdating.
 
+### Sections and reflection context
+
+`entries.content` remains the primary writing surface and is not migrated or rewritten. `entry_sections` adds optional ordered blocks to an entry. Each section stores its own versioned TipTap JSON, derived text, position, revision, and soft-deletion timestamp. Section autosave uses a revision condition plus a local browser draft, while the original entry autosave continues to use `save_entry` unchanged. Readers, search, and exports include active sections; existing entries with no sections work as before.
+
+`journal_emotion_catalog` is read-only seed data with a three-level emotion wheel. On first use, `ensure_journal_emotions` copies it into the authenticated user's `journal_emotions` library. Users may add, rename, recolor, reorder, reparent, hide, or archive their own emotions. The database trigger rejects cycles and a fourth hierarchy level. An emotion can be selected at any level. `section_emotions` has `section_id` as its primary key, so a section has at most one selected emotion; intensity is optional and constrained to an integer from 1 to 10. The selected name and color are snapshotted on the association.
+
+`impact_areas` are flat user-owned categories. `impact_entities` belong to one area and may later reference an external object through optional source fields. `section_impact_areas` and `section_impact_entities` provide many-to-many section context with duplicate prevention and owner-matched foreign keys. They also snapshot selected names. There is no special People model or live MyHabits integration.
+
+Hide removes an emotion from quick selection; archive retires it from future selection. A custom emotion used by a section, or one with children, is archived when the user requests deletion. Used areas and entities are similarly archived. Resetting emotions archives the current library and adds a fresh default copy after confirmation. Existing section associations and snapshots remain intact. Restoring an archived item can fail if a newer active item uses the same normalized name; rename or archive that item first. Section deletion is soft, while permanently deleting an entire entry also deletes its sections and context.
+
+The section editor offers searchable emotion-wheel and impact pickers, recent and frequent emotion suggestions, and inline creation. Search supports exact emotion, impact area, and entity filters on the same section. JSON export uses `stillroom-v2` and includes the normalized context tables and historical snapshots. Markdown export includes active sections and their saved emotion and impact names. The app does not send this data to third-party analytics.
+
 `src/lib/integrations/types.ts` defines provider boundaries for weather, maps, importers, exporters, and future services. The current map uses a local coordinate projection and makes no third-party map request. The core entry service is independent of vendor SDKs.
 
 ## Setup
 
 1. Configure **the same Supabase project** in UseAuth, S3Sync, and Stillroom. UseAuth currently responds with `setup_required` at `https://use-auth-rosy.vercel.app/api/health`; sign-in will not work until its `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are set. Follow the UseAuth README for email confirmation URLs and `APP_URL`.
 2. Configure S3Sync using its README and private S3 bucket. Its deployment is `https://s3-sync.vercel.app`. Set its `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `S3_BUCKET` in **S3Sync only**. Allow the Stillroom origin in bucket CORS for direct `PUT` uploads.
-3. Apply S3Sync's `supabase/migrations/20260613000000_create_files.sql` first. Then apply all Stillroom migrations in order from `supabase/migrations/`, including `20261003000500_authenticated_privileges.sql`. The first migration references `public.files`. If the first four migrations are already applied, run only the privileges migration to fix `42501 permission denied` errors.
+3. Apply S3Sync's `supabase/migrations/20260613000000_create_files.sql` first. Then apply all Stillroom migrations in filename order from `supabase/migrations/`, including `20261003000500_authenticated_privileges.sql` and the `2026100400*` section/context migrations. The first migration references `public.files`. If the first four migrations are already applied, start with the privileges migration; apply the new context migrations only after it.
 4. Copy `.env.example` to `.env.local` and set Stillroom's `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `USEAUTH_URL`, and `S3SYNC_URL`. The example already contains the two service URLs supplied for this project. Never add service-role or AWS keys to Stillroom.
 5. Run `npm ci` and `npm run dev`. Open the local URL printed by Next.js. The UseAuth deployment must be configured before using the sign-in form.
 
@@ -39,6 +52,8 @@ UseAuth owns passwords and identity. Stillroom stores its access and refresh tok
 ## Tests
 
 `npm test` covers timezone-aware day grouping, backdated time conversion, leap-day behavior, and structured-content text extraction. `npm run lint`, `npm run typecheck`, and `npm run build` provide static checks. Live auth, RLS, uploads, and end-to-end persistence still require configured Supabase and S3 services; they could not be exercised against the current UseAuth deployment because its health endpoint reports missing Supabase configuration.
+
+The context tests cover hierarchy placement and input validation. Live database checks must also verify RLS across two users, section autosave conflicts, reset with referenced emotions, impact ownership, and export/search after the new migrations are applied.
 
 ## Current limits
 
