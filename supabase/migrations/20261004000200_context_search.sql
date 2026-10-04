@@ -1,0 +1,34 @@
+-- Preserve the existing search behavior and add exact section-context filters.
+drop function public.search_journal(text,uuid,boolean,uuid[],date,date,text);
+create function public.search_journal(
+  p_query text, p_journal uuid default null, p_favorites boolean default false,
+  p_tags uuid[] default '{}', p_from date default null, p_to date default null,
+  p_media_type text default null, p_emotion uuid default null,
+  p_impact_area uuid default null, p_impact_entity uuid default null
+) returns setof public.entries language sql stable security invoker as $$
+  select e.* from public.entries e
+  join public.journals j on j.id=e.journal_id and j.user_id=e.user_id
+  left join public.locations l on l.id=e.location_id and l.user_id=e.user_id
+  where e.user_id=auth.uid() and e.deleted_at is null
+    and (p_query='' or to_tsvector('simple',coalesce(e.title,'') || ' ' || e.content_text || ' ' || j.name || ' ' || coalesce(l.place_name,'') || ' ' || coalesce(l.locality,'') || ' ' || coalesce((select string_agg(t.name,' ') from public.entry_tags et join public.tags t on t.id=et.tag_id where et.entry_id=e.id),'')) @@ websearch_to_tsquery('simple',p_query)
+      or exists (select 1 from public.entry_sections text_section where text_section.entry_id=e.id and text_section.user_id=e.user_id and text_section.deleted_at is null and to_tsvector('simple',text_section.content_text) @@ websearch_to_tsquery('simple',p_query)))
+    and (p_journal is null or e.journal_id=p_journal)
+    and (not p_favorites or e.is_favorite)
+    and (p_from is null or e.local_date>=p_from)
+    and (p_to is null or e.local_date<=p_to)
+    and (p_media_type is null or exists (select 1 from public.attachments a where a.entry_id=e.id and a.type=p_media_type))
+    and (cardinality(p_tags)=0 or (select count(distinct et.tag_id) from public.entry_tags et where et.entry_id=e.id and et.tag_id=any(p_tags))=cardinality(p_tags))
+    and ((p_emotion is null and p_impact_area is null and p_impact_entity is null) or exists (
+      select 1 from public.entry_sections s
+      left join public.section_emotions se on se.section_id=s.id and se.user_id=s.user_id
+      left join public.section_impact_areas sia on sia.section_id=s.id and sia.user_id=s.user_id
+      left join public.section_impact_entities sie on sie.section_impact_area_id=sia.id and sie.user_id=sia.user_id
+      where s.entry_id=e.id and s.user_id=e.user_id and s.deleted_at is null
+        and (p_emotion is null or se.emotion_id=p_emotion)
+        and (p_impact_area is null or sia.area_id=p_impact_area)
+        and (p_impact_entity is null or sie.entity_id=p_impact_entity)
+    ))
+  order by e.entry_date desc,e.id desc limit 50;
+$$;
+revoke execute on function public.search_journal(text,uuid,boolean,uuid[],date,date,text,uuid,uuid,uuid) from public;
+grant execute on function public.search_journal(text,uuid,boolean,uuid[],date,date,text,uuid,uuid,uuid) to authenticated;
