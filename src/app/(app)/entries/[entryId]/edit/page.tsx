@@ -1,9 +1,30 @@
-import { EntryEditor } from "@/components/entry-editor";
-import { getEntry, listJournals } from "@/lib/journal-service";
 import { notFound } from "next/navigation";
+import { EntryEditor } from "@/components/entry-editor";
+import { EntrySectionsEditor } from "@/components/entry-sections-editor";
+import { EntryContext } from "@/components/entry-context";
 import { AttachmentUploader } from "@/components/attachment-uploader";
 import { AttachmentList } from "@/components/attachment-list";
-import { EntryContext } from "@/components/entry-context";
-import { EntrySectionsEditor } from "@/components/entry-sections-editor";
+import Typography from "@mui/material/Typography";
+import { getEntry, listJournals, listTags } from "@/lib/journal-service";
 import { emotionSuggestions, listEmotionLibrary, listEntrySections, listImpactLibrary } from "@/lib/context-service";
-export default async function EditEntry({ params }: { params: Promise<{ entryId: string }> }) { const id = (await params).entryId; const entry = await getEntry(id); if (!entry || entry.deleted_at) notFound(); const [journals, sections, emotions, impacts, suggestions] = await Promise.all([listJournals(), listEntrySections(id), listEmotionLibrary(), listImpactLibrary(), emotionSuggestions()]); return <><EntryEditor entry={entry as unknown as Parameters<typeof EntryEditor>[0]["entry"]} journals={journals} /><div className="page narrow"><EntrySectionsEditor entryId={id} initialSections={sections} initialEmotions={emotions} initialAreas={impacts.areas} initialEntities={impacts.entities} recentIds={suggestions.recentIds} frequentIds={suggestions.frequentIds}/></div><section className="page" style={{ maxWidth: 850, marginTop: 25 }}><h2>Attachments</h2><AttachmentUploader entryId={id} /><AttachmentList attachments={entry.attachments} editable /><EntryContext entryId={id} context={entry as unknown as Parameters<typeof EntryContext>[0]["context"]} /></section></>; }
+
+export default async function EditEntry({ params }: { params: Promise<{ entryId: string }> }) {
+  const id = (await params).entryId;
+  const entry = await getEntry(id);
+  if (!entry || entry.deleted_at) notFound();
+  const [journals, tags, sections, emotions, impacts, suggestions] = await Promise.all([
+    listJournals(), listTags(), listEntrySections(id), listEmotionLibrary(), listImpactLibrary(), emotionSuggestions(),
+  ]);
+  return <>
+    <EntryEditor entry={entry as unknown as Parameters<typeof EntryEditor>[0]["entry"]} journals={journals} availableTags={tags.map(tag => tag.name)} />
+    <div className="page editor-page entry-support">
+      <EntrySectionsEditor entryId={id} initialSections={sections} initialEmotions={emotions} initialAreas={impacts.areas} initialEntities={impacts.entities} recentIds={suggestions.recentIds} frequentIds={suggestions.frequentIds}/>
+      <section className="entry-context-section" aria-label="Attachments and context">
+        <Typography variant="h2">Add context</Typography>
+        {entry.attachments.length > 0 && <AttachmentList attachments={entry.attachments} editable />}
+        <AttachmentUploader entryId={id} />
+        <EntryContext entryId={id} context={entry as unknown as Parameters<typeof EntryContext>[0]["context"]} />
+      </section>
+    </div>
+  </>;
+}

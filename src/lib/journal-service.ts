@@ -83,7 +83,7 @@ export async function createEntry(input: unknown) {
 }
 export async function getEntry(id: string) {
   uuid.parse(id); const { db, user } = await userDb();
-  const { data, error } = await db.from("entries").select("id,title,content,content_text,revision,entry_date,local_date,timezone,is_favorite,journal_id,deleted_at,weather_data,locations(id,place_name,latitude,longitude,source),journals(name,color),entry_tags(tags(id,name)),attachments(id,file_id,type,file_name,mime_type,size_bytes,caption)").eq("id", id).eq("user_id", user.id).maybeSingle();
+  const { data, error } = await db.from("entries").select("id,title,content,content_text,revision,entry_date,local_date,timezone,is_favorite,journal_id,created_at,updated_at,deleted_at,weather_data,locations(id,place_name,latitude,longitude,source),journals(name,color),entry_tags(tags(id,name)),attachments(id,file_id,type,file_name,mime_type,size_bytes,caption)").eq("id", id).eq("user_id", user.id).maybeSingle();
   if (error) throw error; return data;
 }
 export async function saveEntry(input: unknown) {
