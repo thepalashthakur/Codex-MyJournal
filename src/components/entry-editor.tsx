@@ -9,6 +9,14 @@ import { Bold, Italic, List, ListOrdered, Quote, Heading2, Undo2, Redo2, CheckSq
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isoToZonedLocal, zonedLocalToIso } from "@/lib/zoned-time";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
 
 type Entry = { id: string; title: string; content: Record<string, unknown>; revision: number; entry_date: string; local_date: string; timezone: string; is_favorite: boolean; journal_id: string; entry_tags?: { tags: { name: string } | null }[] };
 type Journal = { id: string; name: string };
@@ -22,6 +30,7 @@ export function EntryEditor({ entry, journals }: { entry: Entry; journals: Journ
   const [favorite, setFavorite] = useState(entry.is_favorite);
   const [tags, setTags] = useState((entry.entry_tags || []).map(item => item.tags?.name).filter(Boolean).join(", "));
   const [status, setStatus] = useState("Saved"); const [focus, setFocus] = useState(false);
+  const [trashOpen, setTrashOpen] = useState(false); const [linkOpen, setLinkOpen] = useState(false); const [linkHref, setLinkHref] = useState("");
   const revision = useRef(entry.revision); const saving = useRef(false); const dirty = useRef(false); const conflict = useRef(false); const timer = useRef<ReturnType<typeof setTimeout> | null>(null); const flushRef = useRef<() => Promise<void>>(async () => {}); const persistRef = useRef<() => void>(() => {});
   const storageKey = `stillroom:draft:${entry.id}`;
   const editor = useEditor({ extensions, content: entry.content, immediatelyRender: false, editorProps: { attributes: { class: "prose-editor", "aria-label": "Journal entry body" } }, onUpdate: () => schedule() });
@@ -48,7 +57,37 @@ export function EntryEditor({ entry, journals }: { entry: Entry; journals: Journ
   useEffect(() => { const online = () => { if (dirty.current) void flush(); }; window.addEventListener("online", online); return () => { window.removeEventListener("online", online); }; }, [flush]);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   async function saveTags() { const names = tags.split(",").map(value => value.trim()).filter(Boolean); const response = await fetch(`/api/entries/${entry.id}/tags`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ names }) }); setStatus(response.ok ? "Tags saved" : "Could not save tags"); }
-  async function trash() { if (!confirm("Move this entry to Trash?")) return; const response = await fetch(`/api/entries/${entry.id}`, { method: "DELETE" }); if (response.ok) router.push("/timeline"); }
-  function tool(label: string, Icon: typeof Bold, command: () => void, active = false) { return <button type="button" title={label} aria-label={label} aria-pressed={active} className={`editor-tool ${active ? "active" : ""}`} onClick={command}><Icon size={17} /></button>; }
-  return <main className={`page editor-page ${focus ? "focus-mode" : ""}`}><div className="editor-top"><a href="/timeline" className="muted">← Timeline</a><span role="status" className="save-status">{status}</span><button className="text-button" onClick={() => setFocus(!focus)}>{focus ? "Exit focus" : "Focus mode"}</button></div><div className="editor-main"><input className="title-input" aria-label="Entry title" placeholder="Give this day a title…" value={title} onChange={event => { setTitle(event.target.value); schedule(); }} /><div className="editor-meta"><label>When<input type="datetime-local" value={local} onChange={event => { setLocal(event.target.value); schedule(); }} /></label><label>Timezone<input value={timezone} onChange={event => { setTimezone(event.target.value); schedule(); }} list="timezones" /></label><datalist id="timezones"><option value="UTC" /><option value="Asia/Kolkata" /><option value="America/New_York" /><option value="Europe/London" /></datalist><label>Journal<select value={journalId} onChange={event => { setJournalId(event.target.value); schedule(); }}>{journals.map(journal => <option value={journal.id} key={journal.id}>{journal.name}</option>)}</select></label><button type="button" className={`favorite-button ${favorite ? "active" : ""}`} aria-label={favorite ? "Remove favorite" : "Mark favorite"} onClick={() => { setFavorite(!favorite); schedule(); }}>{favorite ? "★" : "☆"}</button></div><div className="editor-toolbar" role="toolbar" aria-label="Text formatting">{editor && <>{tool("Bold", Bold, () => editor.chain().focus().toggleBold().run(), editor.isActive("bold"))}{tool("Italic", Italic, () => editor.chain().focus().toggleItalic().run(), editor.isActive("italic"))}{tool("Strikethrough", Strikethrough, () => editor.chain().focus().toggleStrike().run(), editor.isActive("strike"))}{tool("Heading", Heading2, () => editor.chain().focus().toggleHeading({ level: 2 }).run(), editor.isActive("heading", { level: 2 }))}{tool("Bullet list", List, () => editor.chain().focus().toggleBulletList().run(), editor.isActive("bulletList"))}{tool("Numbered list", ListOrdered, () => editor.chain().focus().toggleOrderedList().run(), editor.isActive("orderedList"))}{tool("Checklist", CheckSquare, () => editor.chain().focus().toggleTaskList().run(), editor.isActive("taskList"))}{tool("Quote", Quote, () => editor.chain().focus().toggleBlockquote().run(), editor.isActive("blockquote"))}{tool("Separator", Minus, () => editor.chain().focus().setHorizontalRule().run())}{tool("Link", LinkIcon, () => { const href = prompt("Link URL"); if (href && /^https?:\/\//i.test(href)) editor.chain().focus().setLink({ href }).run(); })}{tool("Undo", Undo2, () => editor.chain().focus().undo().run())}{tool("Redo", Redo2, () => editor.chain().focus().redo().run())}</>}</div><EditorContent editor={editor} /><div className="editor-bottom"><label>Tags <small>Separate with commas</small><input value={tags} onChange={event => setTags(event.target.value)} onBlur={() => void saveTags()} placeholder="family, travel, gratitude" /></label><button type="button" className="text-button" onClick={() => void trash()}>Move to Trash</button></div></div></main>;
+  async function trash() { const response = await fetch(`/api/entries/${entry.id}`, { method: "DELETE" }); setTrashOpen(false); if (response.ok) router.push("/timeline"); else setStatus("Could not move entry to Trash"); }
+  function tool(label: string, Icon: typeof Bold, command: () => void, active = false) { return <IconButton type="button" title={label} aria-label={label} aria-pressed={active} className={`editor-tool ${active ? "active" : ""}`} onClick={command}><Icon size={17} /></IconButton>; }
+  return <main className={`page editor-page ${focus ? "focus-mode" : ""}`}>
+    <div className="editor-top"><a href="/timeline" className="muted">← Timeline</a><span role="status" className="save-status">{status}</span><Button variant="text" onClick={() => setFocus(!focus)}>{focus ? "Exit focus" : "Focus mode"}</Button></div>
+    <div className="editor-main">
+      <input className="title-input" aria-label="Entry title" placeholder="Give this day a title…" value={title} onChange={event => { setTitle(event.target.value); schedule(); }}/>
+      <div className="editor-meta">
+        <TextField label="When" type="datetime-local" value={local} onChange={event => { setLocal(event.target.value); schedule(); }} slotProps={{ inputLabel: { shrink: true } }}/>
+        <TextField label="Timezone" value={timezone} onChange={event => { setTimezone(event.target.value); schedule(); }} slotProps={{ htmlInput: { list: "timezones" } }}/>
+        <datalist id="timezones"><option value="UTC"/><option value="Asia/Kolkata"/><option value="America/New_York"/><option value="Europe/London"/></datalist>
+        <TextField select label="Journal" value={journalId} onChange={event => { setJournalId(event.target.value); schedule(); }}>{journals.map(journal => <MenuItem value={journal.id} key={journal.id}>{journal.name}</MenuItem>)}</TextField>
+        <IconButton aria-label={favorite ? "Remove favorite" : "Mark favorite"} color={favorite ? "primary" : "default"} onClick={() => { setFavorite(!favorite); schedule(); }}>{favorite ? "★" : "☆"}</IconButton>
+      </div>
+      <div className="editor-toolbar" role="toolbar" aria-label="Text formatting">{editor && <>
+        {tool("Bold", Bold, () => editor.chain().focus().toggleBold().run(), editor.isActive("bold"))}
+        {tool("Italic", Italic, () => editor.chain().focus().toggleItalic().run(), editor.isActive("italic"))}
+        {tool("Strikethrough", Strikethrough, () => editor.chain().focus().toggleStrike().run(), editor.isActive("strike"))}
+        {tool("Heading", Heading2, () => editor.chain().focus().toggleHeading({ level: 2 }).run(), editor.isActive("heading", { level: 2 }))}
+        {tool("Bullet list", List, () => editor.chain().focus().toggleBulletList().run(), editor.isActive("bulletList"))}
+        {tool("Numbered list", ListOrdered, () => editor.chain().focus().toggleOrderedList().run(), editor.isActive("orderedList"))}
+        {tool("Checklist", CheckSquare, () => editor.chain().focus().toggleTaskList().run(), editor.isActive("taskList"))}
+        {tool("Quote", Quote, () => editor.chain().focus().toggleBlockquote().run(), editor.isActive("blockquote"))}
+        {tool("Separator", Minus, () => editor.chain().focus().setHorizontalRule().run())}
+        {tool("Link", LinkIcon, () => { setLinkHref(""); setLinkOpen(true); })}
+        {tool("Undo", Undo2, () => editor.chain().focus().undo().run())}
+        {tool("Redo", Redo2, () => editor.chain().focus().redo().run())}
+      </>}</div>
+      <EditorContent editor={editor}/>
+      <div className="editor-bottom"><TextField label="Tags" helperText="Separate with commas" value={tags} onChange={event => setTags(event.target.value)} onBlur={() => void saveTags()} placeholder="family, travel, gratitude" fullWidth/><Button color="error" onClick={() => setTrashOpen(true)}>Move to Trash</Button></div>
+    </div>
+    <Dialog open={linkOpen} onClose={() => setLinkOpen(false)} aria-labelledby="link-title"><DialogTitle id="link-title">Add link</DialogTitle><DialogContent sx={{ pt: 1 }}><TextField label="Link URL" type="url" value={linkHref} onChange={event => setLinkHref(event.target.value)} placeholder="https://example.com" fullWidth/></DialogContent><DialogActions><Button onClick={() => setLinkOpen(false)}>Cancel</Button><Button variant="contained" disabled={!/^https?:\/\//i.test(linkHref)} onClick={() => { if (editor) editor.chain().focus().setLink({ href: linkHref }).run(); setLinkOpen(false); }}>Add link</Button></DialogActions></Dialog>
+    <Dialog open={trashOpen} onClose={() => setTrashOpen(false)} aria-labelledby="trash-title"><DialogTitle id="trash-title">Move entry to Trash?</DialogTitle><DialogContent>You can restore it later from Settings.</DialogContent><DialogActions><Button onClick={() => setTrashOpen(false)}>Cancel</Button><Button variant="contained" color="error" onClick={() => void trash()}>Move to Trash</Button></DialogActions></Dialog>
+  </main>;
 }

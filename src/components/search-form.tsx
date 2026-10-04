@@ -1,0 +1,25 @@
+"use client";
+
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+
+type SearchParams = { q?: string; journal?: string; tag?: string; favorites?: string; from?: string; to?: string; media?: string };
+export function SearchForm({ params, journals, tags }: { params: SearchParams; journals: { id: string; name: string }[]; tags: { id: string; name: string }[] }) {
+  return <Paper component="form" method="get" variant="outlined" sx={{ p: { xs: 2, sm: 3 }, mb: 4 }}><Stack spacing={2}>
+    <TextField label="Search entries" type="search" name="q" defaultValue={params.q || ""} placeholder="A word, place, or memory…" slotProps={{ htmlInput: { maxLength: 200 } }} fullWidth/>
+    <div className="search-filters">
+      <TextField select label="Journal" name="journal" defaultValue={params.journal || ""}><MenuItem value="">All journals</MenuItem>{journals.map(j => <MenuItem value={j.id} key={j.id}>{j.name}</MenuItem>)}</TextField>
+      <TextField select label="Tag" name="tag" defaultValue={params.tag || ""}><MenuItem value="">Any tag</MenuItem>{tags.map(tag => <MenuItem value={tag.id} key={tag.id}>{tag.name}</MenuItem>)}</TextField>
+      <TextField select label="Media" name="media" defaultValue={params.media || ""}><MenuItem value="">Any media</MenuItem><MenuItem value="IMAGE">Photos</MenuItem><MenuItem value="VIDEO">Videos</MenuItem><MenuItem value="AUDIO">Audio</MenuItem></TextField>
+      <TextField label="From" type="date" name="from" defaultValue={params.from || ""} slotProps={{ inputLabel: { shrink: true } }}/>
+      <TextField label="To" type="date" name="to" defaultValue={params.to || ""} slotProps={{ inputLabel: { shrink: true } }}/>
+    </div>
+    <FormControlLabel control={<Checkbox name="favorites" value="1" defaultChecked={params.favorites === "1"}/>} label="Favorites only"/>
+    <Button variant="contained" type="submit" sx={{ alignSelf: "flex-start" }}>Search</Button>
+  </Stack></Paper>;
+}

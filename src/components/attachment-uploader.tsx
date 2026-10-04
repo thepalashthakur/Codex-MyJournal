@@ -1,6 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
 const maxSize = 100 * 1024 * 1024;
 function mediaType(file: File) { if (file.type.startsWith("image/")) return "IMAGE"; if (file.type.startsWith("video/")) return "VIDEO"; if (file.type.startsWith("audio/")) return "AUDIO"; if (file.type === "application/pdf") return "PDF"; return "DOCUMENT"; }
 export function AttachmentUploader({ entryId }: { entryId: string }) {
@@ -24,5 +26,5 @@ export function AttachmentUploader({ entryId }: { entryId: string }) {
     } catch (error) { setStatus(error instanceof Error ? error.message : "Upload failed."); }
     finally { setBusy(false); }
   }
-  return <div className="attachment-upload"><label className="button" style={{ display: "inline-flex", cursor: "pointer" }}>+ Add photo or file<input type="file" accept="image/*,video/*,audio/*,.pdf,.txt,.md" style={{ display: "none" }} disabled={busy} onChange={event => { const file = event.target.files?.[0]; if (file) void upload(file); event.currentTarget.value = ""; }} /></label>{status && <span role="status" className="muted">{status}</span>}</div>;
+  return <div className="attachment-upload"><Button component="label" variant="outlined" disabled={busy}>+ Add photo or file<input type="file" accept="image/*,video/*,audio/*,.pdf,.txt,.md" hidden disabled={busy} onChange={event => { const file = event.target.files?.[0]; if (file) void upload(file); event.currentTarget.value = ""; }} /></Button>{status && <Typography variant="body2" color="text.secondary" role="status">{status}</Typography>}</div>;
 }
