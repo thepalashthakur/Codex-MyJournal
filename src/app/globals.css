@@ -22,7 +22,7 @@ input, select, textarea { font: inherit; }
 .sidebar-foot { display: flex; align-items: center; gap: 10px; min-width: 0; margin-top: auto; padding: 16px 8px 0; border-top: 1px solid var(--line); }
 .avatar { flex: none; }
 .email { overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.mobile-menu { display: none !important; }
+.MuiIconButton-root.mobile-menu { display: none; }
 .app-content { flex: 1; min-width: 0; padding: clamp(24px, 3vw, 48px) clamp(18px, 5vw, 72px) 80px; }
 .page { width: min(1080px, 100%); margin: 0 auto; }
 .page.narrow { max-width: 800px; }
@@ -78,7 +78,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .editor-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }
 .save-status { color: var(--muted); font-size: 12px; }
 .editor-main { min-height: 65vh; padding: clamp(20px, 5vw, 48px); }
-.title-input { width: 100%; padding: 0 !important; border: 0 !important; background: transparent !important; font-size: clamp(2rem, 4vw, 3rem) !important; font-weight: 650; letter-spacing: -.035em; outline: 0 !important; }
+.title-input { width: 100%; padding: 0; border: 0; background: transparent; font-size: clamp(2rem, 4vw, 3rem); font-weight: 650; letter-spacing: -.035em; }
 .title-input::placeholder { color: var(--muted); }
 .editor-meta { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin: 20px 0 24px; }
 .editor-meta label { flex: 1; min-width: 130px; color: var(--muted); font-size: 12px; }
@@ -88,7 +88,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .editor-toolbar { display: flex; flex-wrap: wrap; gap: 2px; padding: 8px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .editor-tool { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); }
 .editor-tool:hover, .editor-tool.active { background: var(--subtle); color: var(--ink); }
-.prose-editor { min-height: 340px; padding: 24px 0; outline: 0; color: var(--ink); font-size: 16px; line-height: 1.8; white-space: pre-wrap; }
+.prose-editor { min-height: 340px; padding: 24px 0; color: var(--ink); font-size: 16px; line-height: 1.8; white-space: pre-wrap; }
 .prose-editor p { margin: .4em 0 1em; }
 .prose-editor h2 { margin: 1.4em 0 .5em; }
 .prose-editor blockquote, .reader-body blockquote { padding-left: 18px; border-left: 3px solid var(--accent); color: var(--muted); }
@@ -137,7 +137,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 
 @media (max-width: 800px) {
   .sidebar { display: none; }
-  .mobile-menu { position: fixed !important; top: 12px; right: 12px; z-index: 22; display: grid !important; border: 1px solid var(--line) !important; background: var(--surface) !important; }
+  .MuiIconButton-root.mobile-menu { position: fixed; top: 12px; right: 12px; z-index: 22; display: grid; border: 1px solid var(--line); background: var(--surface); }
   .app-content { padding: 76px 18px 48px; }
 }
 @media (max-width: 600px) {
