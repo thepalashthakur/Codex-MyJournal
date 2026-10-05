@@ -26,5 +26,5 @@ export function AttachmentUploader({ entryId }: { entryId: string }) {
     } catch (error) { setStatus(error instanceof Error ? error.message : "Upload failed."); }
     finally { setBusy(false); }
   }
-  return <div className="attachment-upload"><Button component="label" variant="outlined" disabled={busy}>+ Add photo or file<input type="file" accept="image/*,video/*,audio/*,.pdf,.txt,.md" hidden disabled={busy} onChange={event => { const file = event.target.files?.[0]; if (file) void upload(file); event.currentTarget.value = ""; }} /></Button>{status && <Typography variant="body2" color="text.secondary" role="status">{status}</Typography>}</div>;
+  return <div className="attachment-upload"><Button component="label" variant="text" disabled={busy}>+ Attachment<input type="file" accept="image/*,video/*,audio/*,.pdf,.txt,.md" hidden disabled={busy} onChange={event => { const file = event.target.files?.[0]; if (file) void upload(file); event.currentTarget.value = ""; }} /></Button>{status && <Typography variant="body2" color="text.secondary" role="status">{status}</Typography>}</div>;
 }
