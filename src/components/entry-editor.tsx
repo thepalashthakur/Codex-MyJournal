@@ -23,7 +23,6 @@ type Entry = {
   id: string; title: string; content: Record<string, unknown>; content_text: string;
   revision: number; entry_date: string; timezone: string; is_favorite: boolean;
   journal_id: string; created_at?: string; updated_at?: string;
-  locations?: { place_name: string | null; latitude: number | null; longitude: number | null } | null;
 };
 type Journal = { id: string; name: string };
 type Draft = { id: string; revision: number; journalId: string; title: string; content: Record<string, unknown>; contentText: string; entryDate: string; localDate: string; timezone: string; isFavorite: boolean };
@@ -160,8 +159,6 @@ export function EntryEditor({ entry, journals }: { entry: Entry; journals: Journ
     <Dialog open={detailsOpen} onClose={() => setDetailsOpen(false)} aria-labelledby="entry-details-title" fullWidth maxWidth="xs"><DialogTitle id="entry-details-title">Entry details</DialogTitle><DialogContent><Stack spacing={2} sx={{ pt: 1 }}>
       <Typography variant="body2">Journal: {journals.find(journal => journal.id === journalId)?.name || "Unknown"}</Typography>
       <Typography variant="body2">Timezone: {timezone}</Typography>
-      {entry.locations?.place_name && <Typography variant="body2">Location: {entry.locations.place_name}</Typography>}
-      {entry.locations && (entry.locations.latitude != null || entry.locations.longitude != null) && <Typography variant="body2">Coordinates: {[entry.locations.latitude, entry.locations.longitude].filter(value => value != null).join(", ")}</Typography>}
       <TextField label="Change timezone" value={timezone} onChange={event => { setTimezone(event.target.value); schedule(); }} slotProps={{ htmlInput: { list: "timezones" } }}/>
       <datalist id="timezones"><option value="UTC"/><option value="Asia/Kolkata"/><option value="America/New_York"/><option value="Europe/London"/></datalist>
       {entry.created_at && <Typography variant="body2">Created: {new Date(entry.created_at).toLocaleString()}</Typography>}

@@ -4,7 +4,7 @@ const state = vi.hoisted(() => ({ db: null as unknown }));
 vi.mock("server-only", () => ({}));
 vi.mock("../src/lib/db", () => ({ userDb: async () => ({ db: state.db, user: { id: "00000000-0000-4000-8000-000000000001" } }) }));
 
-import { createEntry } from "../src/lib/journal-service";
+import { createEntry, getEntry } from "../src/lib/journal-service";
 
 const journalId = "00000000-0000-4000-8000-000000000010";
 const entryId = "00000000-0000-4000-8000-000000000020";
@@ -53,5 +53,23 @@ describe("new entry creation", () => {
     const db = fakeDb({ data: null, error: { code: "PGRST202" } }, { message: "section unavailable" });
     await expect(createEntry(input)).rejects.toMatchObject({ message: "section unavailable" });
     expect(db.deletedEntries).toEqual([entryId]);
+  });
+});
+
+describe("entry location", () => {
+  it("normalizes a joined location for the editor and reading page", async () => {
+    const location = { place_name: "Bengaluru", latitude: 12.97, longitude: 77.59, source: "manual" };
+    state.db = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: { id: entryId, locations: [location] }, error: null }),
+            }),
+          }),
+        }),
+      }),
+    };
+    expect((await getEntry(entryId))?.locations).toEqual(location);
   });
 });

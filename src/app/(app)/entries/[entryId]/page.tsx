@@ -15,7 +15,7 @@ export default async function EntryPage({ params }: { params: Promise<{ entryId:
   const sections = await listEntrySections(id);
   const journal = entry.journals as unknown as { name: string } | null;
   const weather = entry.weather_data as { temperatureC?: number; condition?: string } | null;
-  const location = entry.locations as unknown as { place_name: string | null; latitude: number | null; longitude: number | null } | null;
+  const location = entry.locations;
 
   return <main className="page narrow reader">
     <div className="between">
@@ -27,7 +27,8 @@ export default async function EntryPage({ params }: { params: Promise<{ entryId:
       <h1>{entry.title || "Untitled entry"}</h1>
       <EntryContextSummary
         placeName={location?.place_name}
-        hasLocation={Boolean(location?.place_name || location?.latitude != null || location?.longitude != null)}
+        latitude={location?.latitude}
+        longitude={location?.longitude}
         temperatureC={weather?.temperatureC}
         condition={weather?.condition}
       />
