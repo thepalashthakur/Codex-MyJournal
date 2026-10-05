@@ -16,6 +16,7 @@ import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { Cloud, MapPin } from "lucide-react";
+import { EntryContextSummary } from "./entry-context-summary";
 
 type Context = {
   locations?: { place_name: string | null; latitude: number | null; longitude: number | null; source: string } | null;
@@ -69,9 +70,10 @@ export function EntryContext({ entryId, context }: { entryId: string; context: C
   const hasLocation = Boolean(saved.placeName || saved.latitude || saved.longitude);
   const hasWeather = Boolean(saved.temperature || saved.condition);
   return <section className="entry-context-controls" aria-label="Location and weather">
+    <EntryContextSummary placeName={saved.placeName} hasLocation={hasLocation} temperatureC={saved.temperature} condition={saved.condition}/>
     <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-      <Button startIcon={<MapPin size={17}/>} onClick={() => { setStatus(""); setDialog("location"); }}>{hasLocation ? saved.placeName || "Edit location" : "Add location"}</Button>
-      <Button startIcon={<Cloud size={17}/>} onClick={() => { setStatus(""); setDialog("weather"); }}>{hasWeather ? `${saved.temperature ? `${saved.temperature}°C` : ""}${saved.temperature && saved.condition ? " · " : ""}${saved.condition}` : "Add weather"}</Button>
+      <Button startIcon={<MapPin size={17}/>} onClick={() => { setStatus(""); setDialog("location"); }}>{hasLocation ? "Edit location" : "Add location"}</Button>
+      <Button startIcon={<Cloud size={17}/>} onClick={() => { setStatus(""); setDialog("weather"); }}>{hasWeather ? "Edit weather" : "Add weather"}</Button>
     </Stack>
     {status && !dialog && <Typography role="status" variant="body2" color="text.secondary">{status}</Typography>}
     <Dialog open={dialog === "location"} onClose={close} fullWidth maxWidth="sm" fullScreen={compact} aria-labelledby="location-dialog-title">
