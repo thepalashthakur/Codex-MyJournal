@@ -218,6 +218,9 @@ export async function updateEntrySection(entryId: string, sectionId: string, inp
 }
 export async function deleteEntrySection(entryId: string, sectionId: string) {
   const session = await userDb(); await ownedSection(session, entryId, sectionId);
+  const { count, error: countError } = await session.db.from("entry_sections").select("id", { count: "exact", head: true }).eq("entry_id", entryId).eq("user_id", session.user.id).is("deleted_at", null);
+  if (countError) throw countError;
+  if ((count || 0) <= 1) throw new Error("Keep at least one writing section.");
   const { error } = await session.db.from("entry_sections").update({ deleted_at: new Date().toISOString() }).eq("id", sectionId).eq("entry_id", entryId).eq("user_id", session.user.id);
   if (error) throw error;
 }

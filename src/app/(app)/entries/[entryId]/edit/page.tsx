@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { EntryEditor } from "@/components/entry-editor";
 import { EntrySectionsEditor } from "@/components/entry-sections-editor";
+import { EntryTagPicker } from "@/components/entry-tag-picker";
 import { EntryContext } from "@/components/entry-context";
 import { AttachmentUploader } from "@/components/attachment-uploader";
 import { AttachmentList } from "@/components/attachment-list";
@@ -16,9 +17,10 @@ export default async function EditEntry({ params }: { params: Promise<{ entryId:
     listJournals(), listTags(), listEntrySections(id), listEmotionLibrary(), listImpactLibrary(), emotionSuggestions(),
   ]);
   return <>
-    <EntryEditor entry={entry as unknown as Parameters<typeof EntryEditor>[0]["entry"]} journals={journals} availableTags={tags.map(tag => tag.name)} />
+    <EntryEditor entry={entry as unknown as Parameters<typeof EntryEditor>[0]["entry"]} journals={journals} />
     <div className="page editor-page entry-support">
       <EntrySectionsEditor entryId={id} initialSections={sections} initialEmotions={emotions} initialAreas={impacts.areas} initialEntities={impacts.entities} recentIds={suggestions.recentIds} frequentIds={suggestions.frequentIds}/>
+      <EntryTagPicker entryId={id} initialTags={(entry.entry_tags || []).map(item => (item.tags as unknown as { name: string } | null)?.name).filter((name): name is string => Boolean(name))} availableTags={tags.map(tag => tag.name)} />
       <section className="entry-context-section" aria-label="Attachments and context">
         <Typography variant="h2">Add context</Typography>
         {entry.attachments.length > 0 && <AttachmentList attachments={entry.attachments} editable />}

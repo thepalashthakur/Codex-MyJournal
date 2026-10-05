@@ -102,6 +102,7 @@ describe("owner-scoped context services", () => {
     expect(rpc).toHaveBeenCalledWith("reorder_entry_sections", { p_entry_id: entryA, p_section_ids: [createdId, sectionA] });
     await deleteEntrySection(entryA, createdId);
     expect(tables.entry_sections.find(row => row.id === createdId)?.deleted_at).toBeTruthy();
+    await expect(deleteEntrySection(entryA, sectionA)).rejects.toThrow("Keep at least one writing section");
   });
   it("keeps one emotion per section while allowing replacement, intensity, and removal", async () => {
     await changeSectionContext(entryA, sectionA, { action: "setEmotion", emotionId: emotionA, intensity: 7 });

@@ -78,8 +78,13 @@ export async function createEntry(input: unknown) {
   const { data: journal } = await db.from("journals").select("id").eq("id", journalId).eq("user_id", user.id).is("archived_at", null).maybeSingle();
   if (!journal) throw new Error("Journal not found.");
   const content = value.content || { type: "doc", content: [{ type: "paragraph" }] };
-  const { data, error } = await db.from("entries").insert({ user_id: user.id, journal_id: journal.id, title: value.title, content, content_text: textFromContent(content), entry_date: value.entryDate, local_date: value.localDate, timezone: value.timezone }).select("id").single();
-  if (error) throw error; return data;
+  const { data, error } = await db.rpc("create_entry_with_section", {
+    p_journal_id: journal.id, p_title: value.title, p_section_content: content,
+    p_section_text: textFromContent(content), p_entry_date: value.entryDate,
+    p_local_date: value.localDate, p_timezone: value.timezone,
+  });
+  if (error) throw error;
+  return { id: data as string };
 }
 export async function getEntry(id: string) {
   uuid.parse(id); const { db, user } = await userDb();
@@ -110,13 +115,25 @@ export async function listEntries(options: { journalId?: string; tagId?: string;
   if (options.before) query = query.lt("entry_date", z.iso.datetime({ offset: true }).parse(options.before));
   if (options.search) query = query.textSearch("content_text", options.search, { type: "websearch", config: "simple" });
   if (options.tagId) query = query.eq("entry_tags.tag_id", uuid.parse(options.tagId));
-  const { data, error } = await query; if (error) throw error; return data;
+  const { data, error } = await query; if (error) throw error; return withEntrySectionPreviews(data || []);
 }
 export async function entriesForDate(date: string, journalId?: string) {
   z.iso.date().parse(date); const { db, user } = await userDb();
   let query = db.from("entries").select("id,title,content_text,local_date,entry_date,is_favorite,journal_id,journals(name,color),entry_tags(tags(id,name)),attachments(id,type,file_name)").eq("user_id", user.id).eq("local_date", date).is("deleted_at", null).order("entry_date", { ascending: false }).limit(50);
   if (journalId) query = query.eq("journal_id", uuid.parse(journalId));
-  const { data, error } = await query; if (error) throw error; return data;
+  const { data, error } = await query; if (error) throw error; return withEntrySectionPreviews(data || []);
+}
+export async function withEntrySectionPreviews<T extends { id: string }>(entries: T[]): Promise<(T & { section_preview: string | null })[]> {
+  if (!entries.length) return [];
+  const { db, user } = await userDb();
+  const previews = new Map<string, string>();
+  for (let start = 0; ; start += 500) {
+    const { data, error } = await db.from("entry_sections").select("id,entry_id,content_text").eq("user_id", user.id).in("entry_id", entries.map(entry => entry.id)).is("deleted_at", null).order("entry_id").order("position").order("id").range(start, start + 499);
+    if (error) throw error;
+    for (const section of data || []) if (!previews.has(section.entry_id) && section.content_text.trim()) previews.set(section.entry_id, section.content_text);
+    if (!data || data.length < 500) break;
+  }
+  return entries.map(entry => ({ ...entry, section_preview: previews.get(entry.id) || null }));
 }
 export async function listTags() {
   const { db, user } = await userDb(); const { data, error } = await db.from("tags").select("id,name").eq("user_id", user.id).order("name");

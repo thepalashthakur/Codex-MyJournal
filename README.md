@@ -11,7 +11,7 @@ A private, writing-first journal built with Next.js App Router, TypeScript, Supa
 - Photos, video, audio, PDFs, and safe text documents uploaded through S3Sync. Files remain private and are checked against entry ownership before display.
 - Manual place and weather context. Precise location is never collected automatically.
 - JSON and Markdown exports.
-- Optional ordered entry sections, each with its own rich text, one optional emotion and intensity, and multiple impact areas and entities. Emotion and impact libraries can be customized under Settings.
+- Every entry starts with a writing section. More ordered sections can be added, each with its own rich text, one optional emotion and intensity, and multiple impact areas and entities. Emotion and impact libraries can be customized under Settings.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ Entry content is versioned TipTap JSON (`content_format = tiptap-json`, `content
 
 ### Sections and reflection context
 
-`entries.content` remains the primary writing surface and is not migrated or rewritten. `entry_sections` adds optional ordered blocks to an entry. Each section stores its own versioned TipTap JSON, derived text, position, revision, and soft-deletion timestamp. Section autosave uses a revision condition plus a local browser draft, while the original entry autosave continues to use `save_entry` unchanged. Readers, search, and exports include active sections; existing entries with no sections work as before.
+`entry_sections` is the writing surface. Migration `20261005000100_default_entry_sections.sql` moves existing `entries.content` into a first section, creates an empty section where needed, and clears the legacy body. New entries and their initial section are created in one database transaction through `create_entry_with_section`; apply this migration before deploying the updated app. Each section stores its own versioned TipTap JSON, derived text, position, revision, and soft-deletion timestamp. Section autosave uses a revision condition plus a local browser draft. The legacy body remains readable during a staggered migration. Readers, search, and exports include active sections.
 
 `journal_emotion_catalog` is read-only seed data with a three-level emotion wheel. On first use, `ensure_journal_emotions` copies it into the authenticated user's `journal_emotions` library. Users may add, rename, recolor, reorder, reparent, hide, or archive their own emotions. The database trigger rejects cycles and a fourth hierarchy level. An emotion can be selected at any level. `section_emotions` has `section_id` as its primary key, so a section has at most one selected emotion; intensity is optional and constrained to an integer from 1 to 10. The selected name and color are snapshotted on the association.
 
