@@ -11,6 +11,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import { Bold, CheckSquare, Heading2, Italic, Link as LinkIcon, List, ListOrdered, Minus, MoreHorizontal, Quote, Redo2, Strikethrough, Undo2 } from "lucide-react";
 
 export function SectionFormattingToolbar({ editor, label }: { editor: Editor | null; label: string }) {
@@ -22,16 +23,19 @@ export function SectionFormattingToolbar({ editor, label }: { editor: Editor | n
     return <IconButton key={name} type="button" title={name} aria-label={name} aria-pressed={active} className={`editor-tool ${active ? "active" : ""}`} onClick={command}><Icon size={17}/></IconButton>;
   }
   return <>
-    <div className="editor-toolbar section-toolbar" role="toolbar" aria-label={`${label} formatting`}>
-      {tool("Bold", Bold, () => editor.chain().focus().toggleBold().run(), editor.isActive("bold"))}
-      {tool("Italic", Italic, () => editor.chain().focus().toggleItalic().run(), editor.isActive("italic"))}
-      {tool("Heading", Heading2, () => editor.chain().focus().toggleHeading({ level: 2 }).run(), editor.isActive("heading"))}
-      {tool("Bullet list", List, () => editor.chain().focus().toggleBulletList().run(), editor.isActive("bulletList"))}
-      {tool("Numbered list", ListOrdered, () => editor.chain().focus().toggleOrderedList().run(), editor.isActive("orderedList"))}
-      {tool("Checklist", CheckSquare, () => editor.chain().focus().toggleTaskList().run(), editor.isActive("taskList"))}
-      {tool("Quote", Quote, () => editor.chain().focus().toggleBlockquote().run(), editor.isActive("blockquote"))}
-      {tool("Link", LinkIcon, () => { setLinkHref(""); setLinkOpen(true); })}
-      <IconButton aria-label="More formatting" aria-haspopup="menu" onClick={event => setMoreAnchor(event.currentTarget)}><MoreHorizontal size={18}/></IconButton>
+    <div className="shared-formatting">
+      <Typography variant="caption" color="text.secondary">Formatting · {label}</Typography>
+      <div className="editor-toolbar section-toolbar" role="toolbar" aria-label={`${label} formatting`}>
+        {tool("Bold", Bold, () => editor.chain().focus().toggleBold().run(), editor.isActive("bold"))}
+        {tool("Italic", Italic, () => editor.chain().focus().toggleItalic().run(), editor.isActive("italic"))}
+        {tool("Heading", Heading2, () => editor.chain().focus().toggleHeading({ level: 2 }).run(), editor.isActive("heading"))}
+        {tool("Bullet list", List, () => editor.chain().focus().toggleBulletList().run(), editor.isActive("bulletList"))}
+        {tool("Numbered list", ListOrdered, () => editor.chain().focus().toggleOrderedList().run(), editor.isActive("orderedList"))}
+        {tool("Checklist", CheckSquare, () => editor.chain().focus().toggleTaskList().run(), editor.isActive("taskList"))}
+        {tool("Quote", Quote, () => editor.chain().focus().toggleBlockquote().run(), editor.isActive("blockquote"))}
+        {tool("Link", LinkIcon, () => { setLinkHref(""); setLinkOpen(true); })}
+        <IconButton aria-label="More formatting" aria-haspopup="menu" onClick={event => setMoreAnchor(event.currentTarget)}><MoreHorizontal size={18}/></IconButton>
+      </div>
     </div>
     <Menu anchorEl={moreAnchor} open={Boolean(moreAnchor)} onClose={() => setMoreAnchor(null)}>
       <MenuItem onClick={() => { editor.chain().focus().toggleStrike().run(); setMoreAnchor(null); }}><Strikethrough size={17}/>&nbsp; Strikethrough</MenuItem>

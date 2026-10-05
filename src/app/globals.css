@@ -106,13 +106,15 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .entry-tags .MuiChip-root, .entry-section .MuiChip-root { max-width: 100%; }
 .entry-section { padding: 24px 0; border-top: 1px solid var(--line); }
 .entry-section:first-of-type { padding-top: 0; border-top: 0; }
-.entry-section .section-toolbar { margin-top: 8px; }
+.shared-formatting { position: sticky; top: 0; z-index: 5; display: grid; gap: 2px; padding-top: 8px; background: var(--bg); }
+.shared-formatting .section-toolbar { margin-top: 0; }
 .entry-section .section-writing .prose-editor { min-height: 160px; padding: 8px 0; }
 .entry-context-section { margin-top: 38px; padding-top: 24px; border-top: 1px solid var(--line); }
 .entry-context-section .attachment-upload { margin: 12px 0 4px; }
 .entry-context-controls { display: grid; gap: 10px; }
 .entry-context-controls .MuiButton-root { max-width: 100%; overflow-wrap: anywhere; }
-html.entry-focus .sidebar, html.entry-focus .mobile-menu, html.entry-focus .entry-tags, html.entry-focus .entry-context-section, html.entry-focus .section-toolbar, html.entry-focus .section-context-actions, html.entry-focus .add-section-button, html.entry-focus .section-actions-button { display: none; }
+.entry-context-fields { width: min(100%, 520px); margin-top: 6px; padding: clamp(16px, 3vw, 24px); border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+html.entry-focus .sidebar, html.entry-focus .mobile-menu, html.entry-focus .entry-tags, html.entry-focus .entry-context-section, html.entry-focus .shared-formatting, html.entry-focus .section-context-actions, html.entry-focus .add-section-button, html.entry-focus .section-actions-button { display: none; }
 html.entry-focus .app-content { padding-top: clamp(24px, 4vw, 60px); }
 .focus-mode .editor-top .editor-back { visibility: hidden; }
 html.entry-focus .entry-sections > .MuiStack-root > .MuiTypography-h2 { display: none; }
@@ -154,6 +156,7 @@ html.entry-focus .entry-section:first-of-type .section-writing .prose-editor { m
   .sidebar { display: none; }
   .MuiIconButton-root.mobile-menu { position: fixed; top: 12px; right: 12px; z-index: 22; display: grid; border: 1px solid var(--line); background: var(--surface); }
   .app-content { padding: 76px 18px 48px; }
+  .shared-formatting { top: 60px; }
 }
 @media (max-width: 600px) {
   .page-header { align-items: flex-start; flex-direction: column; }
