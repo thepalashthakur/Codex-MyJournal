@@ -83,6 +83,25 @@ export async function createEntry(input: unknown) {
     p_section_text: textFromContent(content), p_entry_date: value.entryDate,
     p_local_date: value.localDate, p_timezone: value.timezone,
   });
+  if (error?.code === "PGRST202") {
+    // Keep new entries usable while the default-section migration is being applied.
+    const { data: entry, error: entryError } = await db.from("entries").insert({
+      user_id: user.id, journal_id: journal.id, title: value.title,
+      content: { type: "doc", content: [{ type: "paragraph" }] }, content_text: "",
+      entry_date: value.entryDate, local_date: value.localDate, timezone: value.timezone,
+    }).select("id").single();
+    if (entryError) throw entryError;
+    const { error: sectionError } = await db.from("entry_sections").insert({
+      user_id: user.id, entry_id: entry.id, title: "", content,
+      content_text: textFromContent(content), position: 0,
+    });
+    if (sectionError) {
+      const { error: cleanupError } = await db.from("entries").delete().eq("id", entry.id).eq("user_id", user.id);
+      if (cleanupError) console.error("Could not clean up entry after section creation failed", cleanupError);
+      throw sectionError;
+    }
+    return { id: entry.id };
+  }
   if (error) throw error;
   return { id: data as string };
 }
