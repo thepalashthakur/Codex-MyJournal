@@ -104,12 +104,10 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .prose-editor .is-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; color: var(--muted); pointer-events: none; }
 .entry-tags { padding-top: 20px; border-top: 1px solid var(--line); }
 .entry-tags .MuiChip-root, .entry-section .MuiChip-root { max-width: 100%; }
-.entry-section { padding: 28px 0; border-top: 1px solid var(--line); }
-.entry-section:first-of-type .section-writing .prose-editor { min-height: 300px; }
+.entry-section { padding: 24px 0; border-top: 1px solid var(--line); }
+.entry-section:first-of-type { padding-top: 0; border-top: 0; }
 .entry-section .section-toolbar { margin-top: 8px; }
-.entry-section input[type=text] { min-height: 0; height: auto; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--ink); font-size: 1.1rem; font-weight: 600; }
-.entry-section input[type=text]:focus { border: 0; }
-.section-writing .prose-editor { min-height: 80px; padding: 8px 0; }
+.entry-section .section-writing .prose-editor { min-height: 160px; padding: 8px 0; }
 .entry-context-section { margin-top: 38px; padding-top: 24px; border-top: 1px solid var(--line); }
 .entry-context-section .attachment-upload { margin: 12px 0 4px; }
 .entry-context-controls { display: grid; gap: 10px; }
@@ -166,10 +164,9 @@ html.entry-focus .entry-section:first-of-type .section-writing .prose-editor { m
   .editor-main { padding: 0; }
   .between { align-items: flex-start; flex-wrap: wrap; }
 }
-.entry-sections { margin-top: 28px; }
+.entry-sections { margin-top: 14px; }
 .entry-sections .MuiButton-root, .context-manager .MuiButton-root, .context-picker .MuiButton-root { min-height: 44px; }
 .entry-sections .section-actions .MuiButton-root { min-width: 44px; }
 .context-picker .MuiChip-clickable { min-height: 44px; }
-.section-prose { min-height: 90px; padding: 8px 0; }
 .reader-section { margin: 28px 0; padding-top: 24px; border-top: 1px solid var(--line); }
 .reader-section h2 { margin-bottom: 16px; }

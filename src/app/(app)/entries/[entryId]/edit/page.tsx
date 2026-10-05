@@ -16,9 +16,9 @@ export default async function EditEntry({ params }: { params: Promise<{ entryId:
   const [journals, tags, sections, emotions, impacts, suggestions] = await Promise.all([
     listJournals(), listTags(), listEntrySections(id), listEmotionLibrary(), listImpactLibrary(), emotionSuggestions(),
   ]);
-  return <>
+  return <main className="page editor-page">
     <EntryEditor entry={entry as unknown as Parameters<typeof EntryEditor>[0]["entry"]} journals={journals} />
-    <div className="page editor-page entry-support">
+    <div className="entry-support">
       <EntrySectionsEditor entryId={id} initialSections={sections} initialEmotions={emotions} initialAreas={impacts.areas} initialEntities={impacts.entities} recentIds={suggestions.recentIds} frequentIds={suggestions.frequentIds}/>
       <EntryTagPicker entryId={id} initialTags={(entry.entry_tags || []).map(item => (item.tags as unknown as { name: string } | null)?.name).filter((name): name is string => Boolean(name))} availableTags={tags.map(tag => tag.name)} />
       <section className="entry-context-section" aria-label="Attachments and context">
@@ -28,5 +28,5 @@ export default async function EditEntry({ params }: { params: Promise<{ entryId:
         <EntryContext entryId={id} context={entry as unknown as Parameters<typeof EntryContext>[0]["context"]} />
       </section>
     </div>
-  </>;
+  </main>;
 }

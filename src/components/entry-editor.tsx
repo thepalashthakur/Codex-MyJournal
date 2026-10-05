@@ -133,7 +133,7 @@ export function EntryEditor({ entry, journals }: { entry: Entry; journals: Journ
     if (response.ok) router.push("/timeline"); else setStatus("Could not move entry to Trash");
   }
 
-  return <main className={`page editor-page ${focus ? "focus-mode" : ""}`}>
+  return <div className={`entry-core ${focus ? "focus-mode" : ""}`}>
     <header className="editor-top">
       <a href="/timeline" className="editor-back">← Journal</a>
       <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end", minWidth: 0 }}>
@@ -169,5 +169,5 @@ export function EntryEditor({ entry, journals }: { entry: Entry; journals: Journ
     </Stack></DialogContent><DialogActions><Button onClick={() => setDetailsOpen(false)}>Done</Button></DialogActions></Dialog>
     <Dialog open={draftOpen} onClose={() => setDraftOpen(false)} aria-labelledby="legacy-draft-title" fullWidth><DialogTitle id="legacy-draft-title">Earlier unsaved writing</DialogTitle><DialogContent><Typography color="text.secondary" sx={{ mb: 2 }}>Copy any text you want to keep into a section. This draft stays on this device.</Typography><div className="reader-body"><RichContent content={legacyDraft?.content}/></div></DialogContent><DialogActions><Button onClick={() => setDraftOpen(false)}>Done</Button></DialogActions></Dialog>
     <Dialog open={trashOpen} onClose={() => setTrashOpen(false)} aria-labelledby="trash-title"><DialogTitle id="trash-title">Move entry to Trash?</DialogTitle><DialogContent>You can restore it later from Settings.</DialogContent><DialogActions><Button onClick={() => setTrashOpen(false)}>Cancel</Button><Button variant="contained" color="error" onClick={() => void trash()}>Move to Trash</Button></DialogActions></Dialog>
-  </main>;
+  </div>;
 }

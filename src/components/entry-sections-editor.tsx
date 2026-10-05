@@ -30,12 +30,14 @@ type Action = { action: "setEmotion"; emotionId: string | null; intensity: numbe
 
 function SectionCard({ section, index, count, onMove, onDuplicate, onDelete, onEmotion, onImpact }: { section: EntrySection; index: number; count: number; onMove: (index: number, direction: -1 | 1) => Promise<void>; onDuplicate: (section: EntrySection) => Promise<void>; onDelete: (section: EntrySection) => void; onEmotion: () => void; onImpact: () => void }) {
   const [title, setTitle] = useState(section.title); const [status, setStatus] = useState("Saved");
+  const [nameDraft, setNameDraft] = useState(section.title);
+  const [nameOpen, setNameOpen] = useState(false);
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
   const revision = useRef(section.revision); const dirty = useRef(false); const saving = useRef(false); const conflict = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null); const flushRef = useRef<() => Promise<void>>(async () => {}); const persistRef = useRef<() => void>(() => {});
   const storageKey = `stillroom:section:${section.id}`;
   const schedule = useCallback(() => { dirty.current = true; persistRef.current(); setStatus(navigator.onLine ? "Saving…" : "Offline changes"); if (timer.current) clearTimeout(timer.current); if (!conflict.current) timer.current = setTimeout(() => void flushRef.current(), 900); }, []);
-  const editor = useEditor({ extensions: [StarterKit.configure({ link: { openOnClick: false } }), Placeholder.configure({ placeholder: "Write about this moment…" }), TaskList, TaskItem.configure({ nested: true })], content: section.content, immediatelyRender: false, editorProps: { attributes: { class: "prose-editor section-prose", "aria-label": `Content for ${section.title || `section ${index + 1}`}` } }, onUpdate: () => schedule() });
+  const editor = useEditor({ extensions: [StarterKit.configure({ link: { openOnClick: false } }), Placeholder.configure({ placeholder: "Start writing…" }), TaskList, TaskItem.configure({ nested: true })], content: section.content, immediatelyRender: false, editorProps: { attributes: { class: "prose-editor section-prose", "aria-label": `Writing for ${section.title || `section ${index + 1}`}` } }, onUpdate: () => schedule() });
   const flush = useCallback(async () => {
     if (!editor || saving.current || !dirty.current || conflict.current) return;
     const draft = { revision: revision.current, title, content: editor.getJSON(), contentText: editor.getText() };
@@ -55,18 +57,28 @@ function SectionCard({ section, index, count, onMove, onDuplicate, onDelete, onE
   useEffect(() => { const task = setTimeout(() => { if (!editor) return; const saved = localStorage.getItem(storageKey); if (!saved) return; try { const draft = JSON.parse(saved) as { revision: number; title: string; content: Record<string, unknown> }; if (draft.revision !== revision.current) { setStatus("A local section draft exists, but this section changed elsewhere"); return; } setTitle(draft.title); editor.commands.setContent(draft.content); dirty.current = true; setStatus("Offline changes"); } catch { /* Keep the server copy. */ } }, 0); return () => clearTimeout(task); }, [editor, storageKey]);
   useEffect(() => { const online = () => { if (dirty.current) void flushRef.current(); }; window.addEventListener("online", online); return () => window.removeEventListener("online", online); }, []);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  function saveName() { if (nameDraft !== title) { setTitle(nameDraft); schedule(); } setNameOpen(false); }
   return <Box component="section" className="entry-section" aria-label={title || `Section ${index + 1}`}><Stack spacing={1.5}>
-    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}><TextField variant="standard" placeholder={`Section ${index + 1}`} value={title} onChange={event => { setTitle(event.target.value); schedule(); }} slotProps={{ htmlInput: { maxLength: 200, "aria-label": `Section ${index + 1} title` } }} sx={{ flex: 1, "& .MuiInput-root:before": { borderBottom: "none" }, "& .MuiInput-root:hover:not(.Mui-disabled):before": { borderBottom: "none" } }}/><Typography variant="caption" color="text.secondary" role="status">{status}</Typography><IconButton className="section-actions-button" aria-label={`Section ${index + 1} actions`} aria-haspopup="menu" onClick={event => setActionsAnchor(event.currentTarget)}><MoreHorizontal size={19}/></IconButton></Stack>
+    <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+      <Typography component="h2" variant="subtitle2" color={title ? "text.primary" : "text.secondary"}>{title || `Section ${index + 1}`}</Typography>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", ml: "auto" }}><Typography variant="caption" color="text.secondary" role="status">{status}</Typography><IconButton className="section-actions-button" aria-label={`Section ${index + 1} actions`} aria-haspopup="menu" onClick={event => setActionsAnchor(event.currentTarget)}><MoreHorizontal size={19}/></IconButton></Stack>
+    </Stack>
     <SectionFormattingToolbar editor={editor} label={title || `Section ${index + 1}`}/>
     <Box className="section-writing"><EditorContent editor={editor}/></Box>
     <Stack className="section-context-actions" direction="row" sx={{ flexWrap: "wrap", gap: 1, alignItems: "center" }}>{section.emotion ? <Chip onClick={onEmotion} label={`${section.emotion.emotion_name}${section.emotion.intensity ? ` · ${section.emotion.intensity}/10` : ""}`} size="small" /> : <Button size="small" onClick={onEmotion}>+ Emotion</Button>}{section.impacts.length ? section.impacts.map(area => <Chip key={area.id} onClick={onImpact} size="small" label={`${area.area_name}${area.entities.length ? ` · ${area.entities.map(entity => entity.entity_name).join(", ")}` : ""}`}/>) : <Button size="small" onClick={onImpact}>+ Impact</Button>}</Stack>
   </Stack>
     <Menu anchorEl={actionsAnchor} open={Boolean(actionsAnchor)} onClose={() => setActionsAnchor(null)}>
+      <MenuItem onClick={() => { setNameDraft(title); setNameOpen(true); setActionsAnchor(null); }}>{title ? "Rename section" : "Name section"}</MenuItem>
       <MenuItem disabled={index === 0} onClick={() => { void onMove(index, -1); setActionsAnchor(null); }}><ArrowUp size={17}/>&nbsp; Move up</MenuItem>
       <MenuItem disabled={index === count - 1} onClick={() => { void onMove(index, 1); setActionsAnchor(null); }}><ArrowDown size={17}/>&nbsp; Move down</MenuItem>
       <MenuItem disabled={status !== "Saved"} onClick={() => { void onDuplicate(section); setActionsAnchor(null); }}><Copy size={17}/>&nbsp; Duplicate</MenuItem>
       <MenuItem disabled={count === 1} sx={{ color: "error.main" }} onClick={() => { onDelete(section); setActionsAnchor(null); }}><Trash2 size={17}/>&nbsp; Delete</MenuItem>
     </Menu>
+    <Dialog open={nameOpen} onClose={() => setNameOpen(false)} aria-labelledby={`section-name-${section.id}`} fullWidth maxWidth="xs">
+      <DialogTitle id={`section-name-${section.id}`}>Name section</DialogTitle>
+      <DialogContent><TextField label="Section name" value={nameDraft} onChange={event => setNameDraft(event.target.value)} onKeyDown={event => { if (event.key === "Enter") saveName(); }} slotProps={{ htmlInput: { maxLength: 200 } }} fullWidth sx={{ mt: 1 }}/></DialogContent>
+      <DialogActions><Button onClick={() => setNameOpen(false)}>Cancel</Button><Button variant="contained" onClick={saveName}>Save</Button></DialogActions>
+    </Dialog>
   </Box>;
 }
 
@@ -86,7 +98,6 @@ export function EntrySectionsEditor({ entryId, initialSections, initialEmotions,
   async function createArea(name: string) { const item = await contextRequest<ImpactArea>("/api/context/areas", "POST", { name }); setAreas(current => [...current, item]); return item; }
   async function createEntity(name: string, areaId: string) { const item = await contextRequest<ImpactEntity>("/api/context/entities", "POST", { name, areaId }); setEntities(current => [...current, item]); return item; }
   return <section className="entry-sections" aria-label="Entry sections"><Stack spacing={2}>
-    {sections.length > 1 && <Typography id="entry-sections-title" variant="h2">Sections</Typography>}
     {sections.map((section, index) => <SectionCard key={section.id} section={section} index={index} count={sections.length} onMove={move} onDuplicate={item => add(item.id)} onDelete={setDeleteTarget} onEmotion={() => setEmotionFor(section.id)} onImpact={() => setImpactFor(section.id)}/>)}
     <Button className="add-section-button" variant="text" startIcon={<Plus size={18}/>} disabled={busy || sections.length >= 100} onClick={() => void add()} sx={{ alignSelf: "flex-start" }}>Add section</Button>
     {error && <Typography color="error" role="alert">{error}</Typography>}
