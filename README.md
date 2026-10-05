@@ -9,7 +9,7 @@ A private, writing-first journal built with Next.js App Router, TypeScript, Supa
 - Debounced autosave with a PostgreSQL revision check, a browser draft copy, retry after transient failures, and a visible conflict state.
 - Today, paginated timeline, calendar, search, On This Day, media, map, templates, prompts, settings, and Trash views.
 - Photos, video, audio, PDFs, and safe text documents uploaded through S3Sync. Files remain private and are checked against entry ownership before display.
-- Manual place and weather context. Precise location is never collected automatically.
+- Manual place and weather context. With explicit permission, **Use current location** finds a city name from device coordinates; location is never collected automatically.
 - JSON and Markdown exports.
 - Every entry starts with a writing section. More ordered sections can be added, each with its own rich text, one optional emotion and intensity, and multiple impact areas and entities. Emotion and impact libraries can be customized under Settings.
 
@@ -47,7 +47,7 @@ Import this repository as a Next.js project. Add the four Stillroom environment 
 
 ## Privacy and security
 
-UseAuth owns passwords and identity. Stillroom stores its access and refresh tokens in `HttpOnly`, `SameSite=Lax` cookies. A server request verifies the access token with UseAuth, and database operations also run under Supabase RLS. Every route that changes data checks the browser origin and resolves the user; user IDs from the browser are never accepted. Attachment streams require an owned entry and an owned S3Sync file. File content is served with `nosniff`; documents download rather than render inline. The app does not send entry contents to analytics, AI services, map services, or external fonts.
+UseAuth owns passwords and identity. Stillroom stores its access and refresh tokens in `HttpOnly`, `SameSite=Lax` cookies. A server request verifies the access token with UseAuth, and database operations also run under Supabase RLS. Every route that changes data checks the browser origin and resolves the user; user IDs from the browser are never accepted. Attachment streams require an owned entry and an owned S3Sync file. File content is served with `nosniff`; documents download rather than render inline. The app does not send entry contents to analytics, AI services, or external fonts. Only after a user selects **Use current location**, the browser sends its current coordinates directly to BigDataCloud's city lookup service; the returned city name can be edited before saving. Entry text is not sent with this request.
 
 ## Tests
 
