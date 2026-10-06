@@ -141,6 +141,8 @@ a.manager-row-main:hover strong { color: var(--accent); }
 .entry-tags .MuiChip-root, .entry-section .MuiChip-root { max-width: 100%; }
 .entry-section { padding: 14px 0; border-top: 1px solid var(--line); }
 .section-toggle.MuiButton-root { min-height: 32px; padding: 0; color: var(--muted); font-size: 13px; }
+.section-drag-handle.MuiIconButton-root { min-width: 28px; min-height: 32px; margin-left: -4px; color: var(--tertiary); cursor: grab; }
+.section-drag-handle:active { cursor: grabbing; }
 .section-toggle .lucide { transition: transform var(--motion); }
 .section-toggle .is-closed { transform: rotate(-90deg); }
 .entry-section:first-of-type { padding-top: 0; border-top: 0; }
@@ -243,6 +245,7 @@ html.entry-focus .entry-section:first-of-type .section-writing .prose-editor { m
   .mobile-bottom-nav > [aria-current="page"] { color: var(--accent); background: var(--subtle); }
   .mobile-bottom-nav .mobile-create { color: var(--accent); }
   .mobile-bottom-nav > a:hover, .mobile-bottom-nav > button:hover { background: var(--interactive-hover); }
+  .section-drag-handle.MuiIconButton-root { display: none; }
   .shared-formatting { top: 0; }
 }
 @media (max-width: 600px) {
