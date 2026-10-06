@@ -20,7 +20,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { ArrowDown, ArrowUp, Copy, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, Copy, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import type { Emotion, EntrySection, ImpactArea, ImpactEntity } from "@/lib/emotional-context";
 import { contextRequest } from "./context-api";
 import { EmotionPicker, ImpactPicker } from "./section-context-pickers";
@@ -33,6 +33,7 @@ function SectionCard({ section, index, count, onMove, onDuplicate, onDelete, onE
   const [title, setTitle] = useState(section.title); const [status, setStatus] = useState("Saved");
   const [nameDraft, setNameDraft] = useState(section.title);
   const [nameOpen, setNameOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
   const revision = useRef(section.revision); const dirty = useRef(false); const saving = useRef(false); const conflict = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null); const flushRef = useRef<() => Promise<void>>(async () => {}); const persistRef = useRef<() => void>(() => {});
@@ -62,11 +63,11 @@ function SectionCard({ section, index, count, onMove, onDuplicate, onDelete, onE
   function saveName() { if (nameDraft !== title) { setTitle(nameDraft); schedule(); } setNameOpen(false); }
   return <Box component="section" className="entry-section" aria-label={title || `Section ${index + 1}`}><Stack spacing={1}>
     <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
-      <Typography component="h2" variant="subtitle2" color={title ? "text.primary" : "text.secondary"}>{title || `Section ${index + 1}`}</Typography>
+      <Typography component="h2" variant="subtitle2"><Button className="section-toggle" startIcon={<ChevronDown size={16} className={isCollapsed ? "is-closed" : ""}/>} aria-expanded={!isCollapsed} aria-label={`${isCollapsed ? "Expand" : "Collapse"} ${title || `Section ${index + 1}`}`} onClick={() => setIsCollapsed(value => !value)}>{title || `Section ${index + 1}`}</Button></Typography>
       <Stack direction="row" spacing={1} sx={{ alignItems: "center", ml: "auto" }}><Typography variant="caption" color="text.secondary" role="status">{status === "Saved" ? "" : status}</Typography><IconButton className="section-actions-button" aria-label={`Section ${index + 1} actions`} aria-haspopup="menu" onClick={event => setActionsAnchor(event.currentTarget)}><MoreHorizontal size={19}/></IconButton></Stack>
     </Stack>
-    <Box className="section-writing"><EditorContent editor={editor}/></Box>
-    <Stack className="section-context-actions" direction="row" sx={{ flexWrap: "wrap", gap: 1, alignItems: "center" }}>{section.emotion ? <Chip onClick={onEmotion} label={`${section.emotion.emotion_name}${section.emotion.intensity ? ` · ${section.emotion.intensity}/10` : ""}`} size="small" /> : <Button size="small" onClick={onEmotion}>+ Emotion</Button>}{section.impacts.length ? section.impacts.map(area => <Chip key={area.id} onClick={onImpact} size="small" label={`${area.area_name}${area.entities.length ? ` · ${area.entities.map(entity => entity.entity_name).join(", ")}` : ""}`}/>) : <Button size="small" onClick={onImpact}>+ Impact</Button>}</Stack>
+    {!isCollapsed && <><Box className="section-writing"><EditorContent editor={editor}/></Box>
+    <Stack className="section-context-actions" direction="row" sx={{ flexWrap: "wrap", gap: 1, alignItems: "center" }}>{section.emotion ? <Chip onClick={onEmotion} label={`${section.emotion.emotion_name}${section.emotion.intensity ? ` · ${section.emotion.intensity}/10` : ""}`} size="small" /> : <Button size="small" onClick={onEmotion}>+ Emotion</Button>}{section.impacts.length ? section.impacts.map(area => <Chip key={area.id} onClick={onImpact} size="small" label={`${area.area_name}${area.entities.length ? ` · ${area.entities.map(entity => entity.entity_name).join(", ")}` : ""}`}/>) : <Button size="small" onClick={onImpact}>+ Impact</Button>}</Stack></>}
   </Stack>
     <Menu anchorEl={actionsAnchor} open={Boolean(actionsAnchor)} onClose={() => setActionsAnchor(null)}>
       <MenuItem onClick={() => { setNameDraft(title); setNameOpen(true); setActionsAnchor(null); }}>{title ? "Rename section" : "Name section"}</MenuItem>

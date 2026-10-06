@@ -141,7 +141,7 @@ export function EntryEditor({ entry, journals }: { entry: Entry; journals: Journ
     <header className="editor-top">
       <a href="/timeline" className="editor-back">← Journal</a>
       <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end", minWidth: 0 }}>
-        <span role="status" className="save-status">{status}</span>
+        <span role="status" className="save-status">{status === "Saved" ? "" : status}</span>
         {status.includes("failed") && <Button size="small" onClick={() => void flushRef.current()}>Retry</Button>}
         <Button size="small" onClick={() => setFocus(!focus)}>{focus ? "Exit focus" : "Focus"}</Button>
         {!focus && <IconButton aria-label="Entry actions" aria-haspopup="menu" onClick={event => setActionsAnchor(event.currentTarget)}><MoreHorizontal size={20}/></IconButton>}
