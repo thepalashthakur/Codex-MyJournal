@@ -17,7 +17,7 @@ type Location = { place_name: string | null; latitude: number | null; longitude:
 type Context = { locations?: Location | null; weather_data?: { temperatureC?: number; condition?: string } | null };
 type Values = { placeName: string; latitude: string; longitude: string; locationSource: "manual" | "browser"; temperature: string; condition: string };
 
-export function EntryContext({ entryId, context, onLocationSaved }: { entryId: string; context: Context; onLocationSaved?: (placeName: string) => void }) {
+export function EntryContext({ entryId, context, onLocationSaved, onWeatherSaved }: { entryId: string; context: Context; onLocationSaved?: (placeName: string) => void; onWeatherSaved?: (temperature: string, condition: string) => void }) {
   const initial: Values = {
     placeName: context.locations?.place_name || "",
     latitude: context.locations?.latitude?.toString() || "",
@@ -80,6 +80,7 @@ export function EntryContext({ entryId, context, onLocationSaved }: { entryId: s
       const next = { ...values, placeName: values.placeName.trim(), condition: values.condition.trim() };
       setSaved(next); setDraft(next); setEditing(null);
       if (kind === "location") onLocationSaved?.(next.placeName);
+      if (kind === "weather") onWeatherSaved?.(next.temperature, next.condition);
       setStatus(`${kind === "location" ? "Location" : "Weather"} saved`);
     } catch { setStatus("Couldn't save this change. Retry."); }
     finally { setSaving(false); }

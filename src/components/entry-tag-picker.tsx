@@ -15,7 +15,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { Plus } from "lucide-react";
 
-export function EntryTagPicker({ entryId, initialTags, availableTags }: { entryId: string; initialTags: string[]; availableTags: string[] }) {
+export function EntryTagPicker({ entryId, initialTags, availableTags, onTagsChanged }: { entryId: string; initialTags: string[]; availableTags: string[]; onTagsChanged?: (tags: string[]) => void }) {
   const compact = useMediaQuery(useTheme().breakpoints.down("sm"));
   const [tags, setTags] = useState(initialTags);
   const [options, setOptions] = useState(availableTags);
@@ -30,6 +30,7 @@ export function EntryTagPicker({ entryId, initialTags, availableTags }: { entryI
       const response = await fetch(`/api/entries/${entryId}/tags`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ names: next }) });
       if (!response.ok) throw new Error();
       setTags(next);
+      onTagsChanged?.(next);
       setOptions(current => Array.from(new Set([...current, ...next])).sort((a, b) => a.localeCompare(b)));
       setQuery(""); setOpen(false);
     } catch { setError("Couldn't save tags. Try again."); }
