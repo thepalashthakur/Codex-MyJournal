@@ -32,6 +32,11 @@ function dateLabel(local: string, timezone: string) {
   catch { return "Edit date and time"; }
 }
 
+function shortDateLabel(local: string, timezone: string) {
+  try { return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: timezone }).format(new Date(zonedLocalToIso(local, timezone))); }
+  catch { return "Date & time"; }
+}
+
 export function EntryEditor({ entry, journals }: { entry: Entry; journals: Journal[] }) {
   const router = useRouter();
   const [title, setTitle] = useState(entry.title);
@@ -143,14 +148,13 @@ export function EntryEditor({ entry, journals }: { entry: Entry; journals: Journ
       </Stack>
     </header>
     <div className="editor-main">
-      {!focus && <div className="editor-meta">
-        <Button className="editor-date" onClick={event => setDateAnchor(event.currentTarget)} aria-label={`Edit date and time: ${dateLabel(local, timezone)}`}>{dateLabel(local, timezone)}</Button>
-        <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-          <Button className="editor-journal" endIcon={<ChevronDown size={16}/>} onClick={event => setJournalAnchor(event.currentTarget)} aria-haspopup="menu">{journals.find(journal => journal.id === journalId)?.name || "Journal"}</Button>
-          <IconButton aria-label={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite} color={favorite ? "primary" : "default"} onClick={() => { setFavorite(!favorite); schedule(); }}><Star size={21} fill={favorite ? "currentColor" : "none"}/></IconButton>
-        </Stack>
-      </div>}
       <input className="title-input" aria-label="Entry title" placeholder="Give this day a title…" value={title} onChange={event => { setTitle(event.target.value); schedule(); }}/>
+      {!focus && <div className="editor-meta-row">
+        <Button className="editor-date" onClick={event => setDateAnchor(event.currentTarget)} aria-label={`Edit date and time: ${dateLabel(local, timezone)}`}><span className="editor-date-full">{dateLabel(local, timezone)}</span><span className="editor-date-short">{shortDateLabel(local, timezone)}</span></Button>
+        <span className="editor-meta-separator" aria-hidden="true">·</span>
+        <Button className="editor-journal" endIcon={<ChevronDown size={15}/>} onClick={event => setJournalAnchor(event.currentTarget)} aria-haspopup="menu"><span className="editor-journal-name">{journals.find(journal => journal.id === journalId)?.name || "Journal"}</span></Button>
+        <IconButton className="editor-favorite" aria-label={favorite ? "Remove from favorites" : "Add to favorites"} aria-pressed={favorite} color={favorite ? "primary" : "default"} onClick={() => { setFavorite(!favorite); schedule(); }}><Star size={19} fill={favorite ? "currentColor" : "none"}/></IconButton>
+      </div>}
       {legacyDraft && !focus && <Alert severity="info" sx={{ mt: 2 }} action={<Button color="inherit" onClick={() => setDraftOpen(true)}>View draft</Button>}>Earlier unsaved writing is available on this device.</Alert>}
     </div>
     <Popover open={Boolean(dateAnchor)} anchorEl={dateAnchor} onClose={() => setDateAnchor(null)} anchorOrigin={{ vertical: "bottom", horizontal: "left" }}><Stack spacing={2} sx={{ p: 2, width: { xs: 280, sm: 320 } }}><TextField label="Date and time" type="datetime-local" value={local} onChange={event => { setLocal(event.target.value); schedule(); }} slotProps={{ inputLabel: { shrink: true } }}/><Button onClick={() => setDateAnchor(null)}>Done</Button></Stack></Popover>

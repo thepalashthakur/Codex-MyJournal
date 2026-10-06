@@ -60,10 +60,10 @@ function SectionCard({ section, index, count, onMove, onDuplicate, onDelete, onE
   useEffect(() => { const online = () => { if (dirty.current) void flushRef.current(); }; window.addEventListener("online", online); return () => window.removeEventListener("online", online); }, []);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   function saveName() { if (nameDraft !== title) { setTitle(nameDraft); schedule(); } setNameOpen(false); }
-  return <Box component="section" className="entry-section" aria-label={title || `Section ${index + 1}`}><Stack spacing={1.5}>
+  return <Box component="section" className="entry-section" aria-label={title || `Section ${index + 1}`}><Stack spacing={1}>
     <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
       <Typography component="h2" variant="subtitle2" color={title ? "text.primary" : "text.secondary"}>{title || `Section ${index + 1}`}</Typography>
-      <Stack direction="row" spacing={1} sx={{ alignItems: "center", ml: "auto" }}><Typography variant="caption" color="text.secondary" role="status">{status}</Typography><IconButton className="section-actions-button" aria-label={`Section ${index + 1} actions`} aria-haspopup="menu" onClick={event => setActionsAnchor(event.currentTarget)}><MoreHorizontal size={19}/></IconButton></Stack>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", ml: "auto" }}><Typography variant="caption" color="text.secondary" role="status">{status === "Saved" ? "" : status}</Typography><IconButton className="section-actions-button" aria-label={`Section ${index + 1} actions`} aria-haspopup="menu" onClick={event => setActionsAnchor(event.currentTarget)}><MoreHorizontal size={19}/></IconButton></Stack>
     </Stack>
     <Box className="section-writing"><EditorContent editor={editor}/></Box>
     <Stack className="section-context-actions" direction="row" sx={{ flexWrap: "wrap", gap: 1, alignItems: "center" }}>{section.emotion ? <Chip onClick={onEmotion} label={`${section.emotion.emotion_name}${section.emotion.intensity ? ` · ${section.emotion.intensity}/10` : ""}`} size="small" /> : <Button size="small" onClick={onEmotion}>+ Emotion</Button>}{section.impacts.length ? section.impacts.map(area => <Chip key={area.id} onClick={onImpact} size="small" label={`${area.area_name}${area.entities.length ? ` · ${area.entities.map(entity => entity.entity_name).join(", ")}` : ""}`}/>) : <Button size="small" onClick={onImpact}>+ Impact</Button>}</Stack>

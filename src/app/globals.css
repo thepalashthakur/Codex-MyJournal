@@ -75,19 +75,23 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .auth-card .primary { width: 100%; }
 
 .editor-page { max-width: 800px; }
-.editor-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 32px; }
+.editor-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .editor-back { min-height: 44px; display: inline-flex; align-items: center; color: var(--muted); }
 .editor-back:hover { color: var(--ink); }
 .save-status { color: var(--muted); font-size: 12px; }
 .editor-main { min-width: 0; padding: 0; }
-.editor-main .title-input { width: 100%; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--ink); font-size: clamp(1.8rem, 3vw, 2.2rem); font-weight: 570; letter-spacing: -.035em; line-height: 1.3; }
+.editor-main .title-input { width: 100%; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--ink); font-size: clamp(1.65rem, 3vw, 2.1rem); font-weight: 570; letter-spacing: -.035em; line-height: 1.25; }
 .editor-main .title-input:focus { border: 0; outline: none; }
 .editor-main .title-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .title-input::placeholder { color: var(--muted); }
-.editor-meta { display: grid; justify-items: start; gap: 2px; margin-bottom: 30px; }
-.editor-meta .MuiButton-root { min-height: 36px; padding-left: 0; padding-right: 4px; color: var(--muted); font-weight: 500; text-transform: none; }
-.editor-meta .editor-journal { color: var(--ink); }
-.editor-toolbar { display: flex; flex-wrap: nowrap; gap: 2px; max-width: 100%; overflow-x: auto; margin-top: 24px; padding: 6px 0; border-bottom: 1px solid var(--line); scrollbar-width: thin; }
+.editor-meta-row { display: flex; align-items: center; flex-wrap: wrap; column-gap: 6px; min-width: 0; margin: 4px 0 8px; }
+.editor-meta-row .MuiButton-root { min-height: 36px; padding: 0 2px; color: var(--muted); font-weight: 500; text-transform: none; }
+.editor-meta-row .editor-journal { color: var(--ink); }
+.editor-journal-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.editor-date-short { display: none; }
+.editor-meta-separator { color: var(--muted); }
+.editor-meta-row .editor-favorite { margin-left: auto; }
+.editor-toolbar { display: flex; flex-wrap: nowrap; gap: 2px; max-width: 100%; overflow-x: auto; margin-top: 0; padding: 3px 0; border-bottom: 1px solid var(--line); scrollbar-width: thin; }
 .editor-tool { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); }
 .editor-tool:hover, .editor-tool.active { background: var(--subtle); color: var(--ink); }
 .editor-toolbar .MuiIconButton-root { flex: none; }
@@ -102,14 +106,15 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .prose-editor ul[data-type=taskList], .reader-body .reader-tasks { padding-left: 0; list-style: none; }
 .prose-editor ul[data-type=taskList] li, .reader-body .reader-tasks li { display: flex; gap: 8px; }
 .prose-editor .is-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; color: var(--muted); pointer-events: none; }
-.entry-tags { padding-top: 20px; border-top: 1px solid var(--line); }
+.entry-tags { padding-top: 10px; }
 .entry-tags .MuiChip-root, .entry-section .MuiChip-root { max-width: 100%; }
-.entry-section { padding: 24px 0; border-top: 1px solid var(--line); }
+.entry-section { padding: 14px 0; border-top: 1px solid var(--line); }
 .entry-section:first-of-type { padding-top: 0; border-top: 0; }
-.shared-formatting { position: sticky; top: 0; z-index: 5; display: grid; gap: 2px; padding-top: 8px; background: var(--bg); }
+.shared-formatting { position: sticky; top: 0; z-index: 5; display: grid; padding-top: 4px; background: var(--bg); }
 .shared-formatting .section-toolbar { margin-top: 0; }
-.entry-section .section-writing .prose-editor { min-height: 160px; padding: 8px 0; }
-.entry-context-section { margin-top: 38px; padding-top: 24px; border-top: 1px solid var(--line); }
+.entry-section .section-writing .prose-editor { min-height: 128px; padding: 4px 0; }
+.entry-context-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.entry-context-section > h2 { margin-bottom: 8px; }
 .entry-context-section .attachment-upload { margin: 12px 0 4px; }
 .entry-context-controls { display: grid; gap: 10px; }
 .entry-context-controls .MuiButton-root { max-width: 100%; overflow-wrap: anywhere; }
@@ -163,11 +168,15 @@ html.entry-focus .entry-section:first-of-type .section-writing .prose-editor { m
   .panel, .map-panel { padding: 18px; }
   .calendar-cell { min-height: 58px; padding: 5px; font-size: 11px; }
   .calendar-cell small { margin-top: 4px; font-size: 10px; }
-  .editor-top { margin-bottom: 16px; }
+  .editor-top { margin-bottom: 8px; }
+  .editor-date-full { display: none; }
+  .editor-date-short { display: inline; }
+  .editor-meta-row .editor-journal { min-width: 0; max-width: min(40vw, 180px); }
+  .editor-toolbar .MuiIconButton-root.editor-tool-mobile-overflow { display: none; }
   .editor-main { padding: 0; }
   .between { align-items: flex-start; flex-wrap: wrap; }
 }
-.entry-sections { margin-top: 14px; }
+.entry-sections { margin-top: 6px; }
 .entry-sections .MuiButton-root, .context-manager .MuiButton-root, .context-picker .MuiButton-root { min-height: 44px; }
 .entry-sections .section-actions .MuiButton-root { min-width: 44px; }
 .context-picker .MuiChip-clickable { min-height: 44px; }

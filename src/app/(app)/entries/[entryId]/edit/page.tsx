@@ -22,7 +22,7 @@ export default async function EditEntry({ params }: { params: Promise<{ entryId:
       <EntrySectionsEditor entryId={id} initialSections={sections} initialEmotions={emotions} initialAreas={impacts.areas} initialEntities={impacts.entities} recentIds={suggestions.recentIds} frequentIds={suggestions.frequentIds}/>
       <EntryTagPicker entryId={id} initialTags={(entry.entry_tags || []).map(item => (item.tags as unknown as { name: string } | null)?.name).filter((name): name is string => Boolean(name))} availableTags={tags.map(tag => tag.name)} />
       <section className="entry-context-section" aria-label="Attachments and context">
-        <Typography variant="h2">Add context</Typography>
+        <Typography component="h2" variant="subtitle2" color="text.secondary">Details & attachments</Typography>
         {entry.attachments.length > 0 && <AttachmentList attachments={entry.attachments} editable />}
         <AttachmentUploader entryId={id} />
         <EntryContext entryId={id} context={entry as unknown as Parameters<typeof EntryContext>[0]["context"]} />

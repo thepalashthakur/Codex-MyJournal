@@ -11,7 +11,6 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
 import { Bold, CheckSquare, Heading2, Italic, Link as LinkIcon, List, ListOrdered, Minus, MoreHorizontal, Quote, Redo2, Strikethrough, Undo2 } from "lucide-react";
 
 export function SectionFormattingToolbar({ editor, label }: { editor: Editor | null; label: string }) {
@@ -19,25 +18,27 @@ export function SectionFormattingToolbar({ editor, label }: { editor: Editor | n
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkHref, setLinkHref] = useState("");
   if (!editor) return null;
-  function tool(name: string, Icon: typeof Bold, command: () => void, active = false) {
-    return <IconButton key={name} type="button" title={name} aria-label={name} aria-pressed={active} className={`editor-tool ${active ? "active" : ""}`} onClick={command}><Icon size={17}/></IconButton>;
+  function tool(name: string, Icon: typeof Bold, command: () => void, active = false, mobileOverflow = false) {
+    return <IconButton key={name} type="button" title={name} aria-label={name} aria-pressed={active} className={`editor-tool ${active ? "active" : ""} ${mobileOverflow ? "editor-tool-mobile-overflow" : ""}`} onClick={command}><Icon size={17}/></IconButton>;
   }
   return <>
     <div className="shared-formatting">
-      <Typography variant="caption" color="text.secondary">Formatting · {label}</Typography>
       <div className="editor-toolbar section-toolbar" role="toolbar" aria-label={`${label} formatting`}>
         {tool("Bold", Bold, () => editor.chain().focus().toggleBold().run(), editor.isActive("bold"))}
         {tool("Italic", Italic, () => editor.chain().focus().toggleItalic().run(), editor.isActive("italic"))}
-        {tool("Heading", Heading2, () => editor.chain().focus().toggleHeading({ level: 2 }).run(), editor.isActive("heading"))}
+        {tool("Heading", Heading2, () => editor.chain().focus().toggleHeading({ level: 2 }).run(), editor.isActive("heading"), true)}
         {tool("Bullet list", List, () => editor.chain().focus().toggleBulletList().run(), editor.isActive("bulletList"))}
-        {tool("Numbered list", ListOrdered, () => editor.chain().focus().toggleOrderedList().run(), editor.isActive("orderedList"))}
+        {tool("Numbered list", ListOrdered, () => editor.chain().focus().toggleOrderedList().run(), editor.isActive("orderedList"), true)}
         {tool("Checklist", CheckSquare, () => editor.chain().focus().toggleTaskList().run(), editor.isActive("taskList"))}
-        {tool("Quote", Quote, () => editor.chain().focus().toggleBlockquote().run(), editor.isActive("blockquote"))}
+        {tool("Quote", Quote, () => editor.chain().focus().toggleBlockquote().run(), editor.isActive("blockquote"), true)}
         {tool("Link", LinkIcon, () => { setLinkHref(""); setLinkOpen(true); })}
         <IconButton aria-label="More formatting" aria-haspopup="menu" onClick={event => setMoreAnchor(event.currentTarget)}><MoreHorizontal size={18}/></IconButton>
       </div>
     </div>
     <Menu anchorEl={moreAnchor} open={Boolean(moreAnchor)} onClose={() => setMoreAnchor(null)}>
+      <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 2 }).run(); setMoreAnchor(null); }}><Heading2 size={17}/>&nbsp; Heading</MenuItem>
+      <MenuItem onClick={() => { editor.chain().focus().toggleOrderedList().run(); setMoreAnchor(null); }}><ListOrdered size={17}/>&nbsp; Numbered list</MenuItem>
+      <MenuItem onClick={() => { editor.chain().focus().toggleBlockquote().run(); setMoreAnchor(null); }}><Quote size={17}/>&nbsp; Quote</MenuItem>
       <MenuItem onClick={() => { editor.chain().focus().toggleStrike().run(); setMoreAnchor(null); }}><Strikethrough size={17}/>&nbsp; Strikethrough</MenuItem>
       <MenuItem onClick={() => { editor.chain().focus().setHorizontalRule().run(); setMoreAnchor(null); }}><Minus size={17}/>&nbsp; Separator</MenuItem>
       <MenuItem onClick={() => { editor.chain().focus().undo().run(); setMoreAnchor(null); }}><Undo2 size={17}/>&nbsp; Undo</MenuItem>
